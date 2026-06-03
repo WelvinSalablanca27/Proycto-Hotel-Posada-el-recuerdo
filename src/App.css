@@ -1,0 +1,139 @@
+.margen-superior-main {
+  margin-top: 50px;
+  padding: 20px;
+}
+
+.color-navbar {
+  background-color: #1068db !important;
+  background-image: linear-gradient(90deg, #1c06e2 0%, #1c06e2 50%, #061ce2 50%);
+}
+
+.color-texto-marca {
+  color: #1e3d87 !important;
+  font-size: 18px;
+}
+
+/* =========================
+   TARJETA HABITACIÓN
+========================= */
+
+.tarjeta-habitacion-contenedor {
+  position: relative;
+  overflow: hidden;
+}
+
+.tarjeta-habitacion-cuerpo {
+  transition: opacity 150ms ease;
+}
+
+.tarjeta-habitacion-cuerpo-activo {
+  opacity: 0.4;
+}
+
+.tarjeta-habitacion-cuerpo-inactivo {
+  opacity: 1;
+}
+
+.tarjeta-habitacion-placeholder-imagen {
+  height: 50px;
+  width: 50px;
+}
+
+/* =========================
+   CAPA ACCIONES
+========================= */
+
+.tarjeta-habitacion-capa {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 8px;
+}
+
+.tarjeta-habitacion-botones-capa {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+
+    background: linear-gradient(
+        135deg,
+        #93c5fd,
+        #93c5fd,
+        #93c5fd
+    );
+
+    background-attachment: fixed;
+}
+.menu-activo {
+  background-color: white !important;
+  color: #0d6efd !important;
+  border-radius: 10px;
+  padding: 10px 15px;
+  transition: 0.3s;
+  font-weight: bold;
+}
+
+ .tabla-huespedes thead th {
+    background-color: #080eca; /* verde Bootstrap */
+    color: white;
+    border-color: #080eca;
+}
+
+.tabla-habitacion thead th {
+    background-color: #080eca; /* verde Bootstrap */
+    color: white;
+    border-color: #080eca;
+}
+ 
+.menu-activo {
+  background-color: #0d6efd !important;
+  color: white !important;
+  border-radius: 10px;
+  padding: 10px 15px !important;
+  transition: 0.3s;
+  font-weight: bold;
+}
+
+/* TEXTO ACTIVO */
+.menu-activo strong {
+  color: white !important;
+}
+
+/* ICONO ACTIVO */
+.menu-activo i {
+  color: white !important;
+}
+
+/* NORMAL */
+.nav-link {
+  color: black !important;
+  border-radius: 10px;
+  padding: 10px 15px !important;
+  transition: 0.3s;
+}
+
+/* TEXTO NORMAL */
+.nav-link strong {
+  color: black !important;
+}
+
+/* ICONO NORMAL */
+.nav-link i {
+  color: black !important;
+}
+
+/* HOVER */
+.nav-link:hover {
+  background-color: #dbeafe;
+}
