@@ -277,7 +277,6 @@ const Encabezado = () => {
                     </Offcanvas.Body>
 
                 </Navbar.Offcanvas>
-
             </Container>
 
         </Navbar>
