@@ -92,87 +92,78 @@ const Encabezado = () => {
 
             contenidoMenu = (
                 <>
-
                     <Nav className="ms-auto pe-2">
 
                         <Nav.Link
                             onClick={() => manejarNavegacion("/")}
-                            className={
-                                rutaActual === "/"
-                                    ? "menu-activo"
-                                    : "text-white"
-                            }
+                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
                         >
-                            {mostrarMenu ? (
-                                <i className="bi-house-fill me-2"></i>
-                            ) : null}
-
+                            {mostrarMenu ? <i className="bi-house-fill me-2"></i> : null}
                             <strong>Inicio</strong>
                         </Nav.Link>
 
                         <Nav.Link
                             onClick={() => manejarNavegacion("/huesped")}
-                            className={
-                                rutaActual === "/huesped"
-                                    ? "menu-activo"
-                                    : "text-white"
-                            }
+                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
                         >
                             {mostrarMenu ? (
-                                <i className="bi-bookmark-fill me-2"></i>
+                                <i className="bi-people-fill me-2"></i>
                             ) : null}
-
-                            <strong>Huespedes</strong>
-                        </Nav.Link>
-
-                        <Nav.Link
-                            onClick={() => manejarNavegacion("/reserva")}
-                            className={
-                                rutaActual === "/reserva"
-                                    ? "menu-activo"
-                                    : "text-white"
-                            }
-                        >
-                            {mostrarMenu ? (
-                                <i className="bi-bag-heart-fill me-2"></i>
-                            ) : null}
-
-                            <strong>Reserva</strong>
-                        </Nav.Link>
-
-                        <Nav.Link
-                            onClick={() => manejarNavegacion("/recepcion")}
-                            className={
-                                rutaActual === "/recepcion"
-                                    ? "menu-activo"
-                                    : "text-white"
-                            }
-                        >
-                            {mostrarMenu ? (
-                                <i className="bi bi-person-workspace me-2"></i>
-                            ) : null}
-
-                            <strong>Recepcion</strong>
+                            <strong>Huéspedes</strong>
                         </Nav.Link>
 
                         <Nav.Link
                             onClick={() => manejarNavegacion("/habitacion")}
-                            className={
-                                rutaActual === "/habitacion"
-                                    ? "menu-activo"
-                                    : "text-white"
-                            }
+                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
                         >
                             {mostrarMenu ? (
-                                <i className="bi-images me-2"></i>
+                                <i className="bi-door-open-fill me-2"></i>
                             ) : null}
+                            <strong>Habitaciones</strong>
+                        </Nav.Link>
 
-                            <strong>Habitación</strong>
+                        <Nav.Link
+                            onClick={() => manejarNavegacion("/reserva")}
+                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
+                        >
+                            {mostrarMenu ? (
+                                <i className="bi-calendar-check-fill me-2"></i>
+                            ) : null}
+                            <strong>Reservas</strong>
+                        </Nav.Link>
+
+                        <Nav.Link
+                            onClick={() => manejarNavegacion("/recepcion")}
+                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
+                        >
+                            {mostrarMenu ? (
+                                <i className="bi-person-workspace me-2"></i>
+                            ) : null}
+                            <strong>Recepción</strong>
+                        </Nav.Link>
+
+                        <Nav.Link
+                            onClick={() => manejarNavegacion("/dashboard")}
+                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
+                        >
+                            {mostrarMenu ? (
+                                <i className="bi-bar-chart-fill me-2"></i>
+                            ) : null}
+                            <strong>Dashboard</strong>
+                        </Nav.Link>
+
+                        {/* Chat IA */}
+                        <Nav.Link
+                            onClick={() => setMostrarChatIA(true)}
+                            className="text-white"
+                        >
+                            <i className="bi bi-robot me-2"></i>
                         </Nav.Link>
 
                         <hr />
 
-                        {!mostrarMenu && (
+                        {/* Cerrar sesión */}
+                        {mostrarMenu ? null : (
                             <Nav.Link
                                 onClick={cerrarSesion}
                                 className="text-white"
@@ -182,20 +173,14 @@ const Encabezado = () => {
                         )}
 
                         <hr />
-
                     </Nav>
 
+                    {/* info usuario */}
                     {mostrarMenu && (
-
                         <div className="mt-3 p-3 rounded bg-light text-dark">
-
                             <p className="mb-2">
-
                                 <i className="bi-envelope-fill me-2"></i>
-
-                                {localStorage.getItem("usuario-supabase")?.toLowerCase() ||
-                                    "Usuario"}
-
+                                {localStorage.getItem("usuario-supabase")?.toLowerCase() || "Usuario"}
                             </p>
 
                             <button
@@ -203,13 +188,10 @@ const Encabezado = () => {
                                 onClick={cerrarSesion}
                             >
                                 <i className="bi-box-arrow-right me-2"></i>
-
                                 Cerrar sesión
                             </button>
-
                         </div>
                     )}
-
                 </>
             );
         }
