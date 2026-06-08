@@ -13,6 +13,7 @@ import Habitacion from "./views/Habitacion";
 import Reserva from "./views/Reserva";
 import Recepcion from "./views/Recepcion";
 import Login from "./views/Login";
+import Dashboard from "./views/Dashboard";
 import Pagina404 from "./views/Pagina404";
 
 const App = () => {
@@ -32,6 +33,7 @@ const App = () => {
           <Route path="/habitacion" element={<RutaProtegida><Habitacion /></RutaProtegida>} />
           <Route path="/reserva" element={<RutaProtegida><Reserva /></RutaProtegida>} />
           <Route path="/recepcion" element={<RutaProtegida><Recepcion /></RutaProtegida>} />
+          <Route path="/dashboard" element={<Dashboard />} /> {/* Ruta pública */}
 
 
           {/* Página no encontrada */}
