@@ -23,7 +23,7 @@
     "react-responsive": "^10.0.1",
     "react-router-dom": "^7.15.1",
     "react-select": "^5.10.2",
-    "recharts": "^2.12.7",
+    "recharts": "^3.0.0-alpha.9",
     "xlsx": "^0.18.5"
   }
 }
