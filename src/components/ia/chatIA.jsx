@@ -11,7 +11,7 @@ const ChatIA = ({ mostrar, onCerrar }) => {
 
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-const contextoBaseDatos = `
+  const contextoBaseDatos = `
 Sistema de Gestión Hotelera.
 
 Tablas disponibles:
@@ -138,10 +138,16 @@ Relaciones:
                 <h5>¿Qué información necesitas?</h5>
                 <p className="mt-2">Ejemplos:</p>
                 <ul className="text-start">
-                  <li>Ventas totales de este mes</li>
-                  <li>Los 10 productos más vendidos</li>
-                  <li>Clientes que más han comprado</li>
-                  <li>Ventas por empleado</li>
+                  <li>Total de reservas del mes actual</li>
+                  <li>Top 10 habitaciones más reservadas</li>
+                  <li>Huéspedes con mayor número de reservas</li>
+                  <li>Desempeño de reservas por recepcionista</li>
+                  <li>Ingresos totales generados</li>
+                  <li>Disponibilidad actual de habitaciones</li>
+                  <li>Distribución de huéspedes por lugar de origen</li>
+                  <li>Análisis de métodos de pago utilizados</li>
+                  <li>Ingresos por tipo de habitación</li>
+                  <li>Promedio de ocupación hotelera</li>
                 </ul>
               </div>
             )}
