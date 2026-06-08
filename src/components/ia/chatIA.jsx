@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Button, Form, Spinner, Table } from 'react-bootstrap';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from '../../database/supabaseconfig';
 
 const ChatIA = ({ mostrar, onCerrar }) => {

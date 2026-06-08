@@ -3,11 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Container, Nav, Navbar, Offcanvas } from "react-bootstrap";
 import logo from "../../assets/logo.png";
 import { supabase } from "../../database/supabaseconfig";
+import ChatIA from "../ia/chatIA";
+
 
 const Encabezado = () => {
 
     const [mostrarMenu, setMostrarMenu] = useState(false);
-
+    const [mostrarChatIA, setMostrarChatIA] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -229,8 +231,10 @@ const Encabezado = () => {
                             Hoteleria Posada el Recuerdo
                         </h4>
                     </strong>
-
                 </Navbar.Brand>
+                <ChatIA mostrar={mostrarChatIA}
+                 onCerrar={() => 
+                 setMostrarChatIA(false)} />
 
                 {!esLogin && (
 
