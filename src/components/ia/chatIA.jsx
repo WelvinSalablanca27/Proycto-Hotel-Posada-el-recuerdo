@@ -11,17 +11,33 @@ const ChatIA = ({ mostrar, onCerrar }) => {
 
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-  const contextoBaseDatos = `
-  Sistema de ventas. 
-  Tablas disponibles:
-  - categorias (id_categoria, nombre_categoria, descripcion_categoria)
-  - clientes (id_cliente, nombre_cliente, apellido_cliente, celular)
-  - productos (id_producto, nombre_producto, descripcion_producto, categoria_producto, precio_venta, url_imagen)
-  - ventas (id_venta, id_cliente, id_empleado, fecha_venta, metodo_pago, total)
-  - detalles_ventas (id_detalle, id_venta, id_producto, cantidad, precio_unitario, subtotal)
-  - empleados (id_empleado, nombre_empleado, apellido_empleado, email, celular, tipo_empleado)
-  `;
+const contextoBaseDatos = `
+Sistema de Gestión Hotelera.
 
+Tablas disponibles:
+
+- Huesped
+  (id_huesped, primer_nombre, segundo_nombre, primer_apellido,
+   segundo_apellido, cedula_pasaporte, lugar_origen)
+
+- Habitacion
+  (id_habitacion, numero_habitacion, tipo_habitacion,
+   tipo_camas, tipo_clima, precio, estado)
+
+- recepcion
+  (id_recepcionista, fecha, nombre, apellido,
+   hora_entrada, hora_salida, turno)
+
+- Reserva
+  (id_reserva, id_huesped, id_recepcionista,
+   id_habitacion, hora_entrada, hora_salida,
+   monto, forma_pago, fecha_pago)
+
+Relaciones:
+- Reserva.id_huesped → Huesped.id_huesped
+- Reserva.id_recepcionista → recepcion.id_recepcionista
+- Reserva.id_habitacion → Habitacion.id_habitacion
+`;
   const enviarConsulta = async () => {
     if (!entrada.trim()) return;
 
