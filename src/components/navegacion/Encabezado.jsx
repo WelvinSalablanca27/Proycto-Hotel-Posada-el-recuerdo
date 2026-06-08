@@ -104,7 +104,7 @@ const Encabezado = () => {
 
                         <Nav.Link
                             onClick={() => manejarNavegacion("/huesped")}
-                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
+                            className={mostrarMenu ? "menu-activo" : "text-white"}
                         >
                             {mostrarMenu ? (
                                 <i className="bi-people-fill me-2"></i>
