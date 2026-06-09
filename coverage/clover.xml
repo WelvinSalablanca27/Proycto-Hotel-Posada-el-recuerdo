@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1781020666703" clover="3.2.0">
+  <project timestamp="1781020666703" name="All files">
+    <metrics statements="21" coveredstatements="18" conditionals="22" coveredconditionals="19" methods="1" coveredmethods="1" elements="44" coveredelements="38" complexity="0" loc="21" ncloc="21" packages="1" files="1" classes="1"/>
+    <file name="registroHuesped.js" path="C:\Users\welvi\Desktop\Hoteleria-Posada-El-Recuerdo\src\test\registroHuesped.js">
+      <metrics statements="21" coveredstatements="18" conditionals="22" coveredconditionals="19" methods="1" coveredmethods="1"/>
+      <line num="2" count="5" type="stmt"/>
+      <line num="5" count="5" type="cond" truecount="8" falsecount="0"/>
+      <line num="6" count="1" type="stmt"/>
+      <line num="10" count="4" type="stmt"/>
+      <line num="12" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="13" count="1" type="stmt"/>
+      <line num="17" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="18" count="0" type="stmt"/>
+      <line num="22" count="3" type="stmt"/>
+      <line num="24" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="25" count="0" type="stmt"/>
+      <line num="29" count="3" type="stmt"/>
+      <line num="31" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="32" count="1" type="stmt"/>
+      <line num="36" count="2" type="stmt"/>
+      <line num="38" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="39" count="1" type="stmt"/>
+      <line num="43" count="1" type="cond" truecount="3" falsecount="1"/>
+      <line num="44" count="0" type="stmt"/>
+      <line num="47" count="1" type="stmt"/>
+      <line num="50" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>
