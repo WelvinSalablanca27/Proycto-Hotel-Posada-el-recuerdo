@@ -2,48 +2,54 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import { supabase } from "../database/supabaseconfig";
 
+// 🔍 Buscador y paginación
 import CuadrosBusquedas from "../components/busquedas/CuadroBusquedas";
 import Paginacion from "../components/ordenamiento/Paginacion";
-import NotificacionOperacion from "../components/NotificacionOperacion";
 
-import TablaRecepcion from "../components/recepcion/TablaRecepcion";
+// 📦 Modales y componentes de Recepción
 import ModalRegistroRecepcion from "../components/recepcion/ModalRegistroRecepcion";
 import ModalEdicionRecepcion from "../components/recepcion/ModalEdicionRecepcion";
 import ModalEliminacionRecepcion from "../components/recepcion/ModalEliminacionRecepcion";
+import NotificacionOperacion from "../components/NotificacionOperacion";
+
+// 📊 Tablas y tarjetas responsive
+import TablaRecepcion from "../components/recepcion/TablaRecepcion";
+import TarjetaRecepcion from "../components/recepcion/TarjetaRecepcion";
 
 const Recepcion = () => {
 
-  const [toast, setToast] = useState({
-    mostrar: false,
-    mensaje: "",
-    tipo: "",
-  });
+  // 🔔 Estado para notificaciones (toast)
+  const [toast, setToast] = useState({ mostrar: false, mensaje: "", tipo: "" });
 
+  // 📌 Control del modal de registro
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
-  const [mostrarModalEliminacion, setMostrarModalEliminacion] = useState(false);
 
+  // 📊 Lista de recepcionistas y estado de carga
+  const [recepcionistas, setRecepcionistas] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  const [recepcionistas, setRecepcionistas] = useState([]);
-  const [recepcionistasFiltrados, setRecepcionistasFiltrados] = useState([]);
-
+  // 🗑️ Control de eliminación
+  const [mostrarModalEliminacion, setMostrarModalEliminacion] = useState(false);
   const [recepcionistaAEliminar, setRecepcionistaAEliminar] = useState(null);
 
-  const [textoBusqueda, setTextoBusqueda] = useState("");
+  // ✏️ Control de edición
+  const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
 
+  // 🔎 Búsqueda
+  const [textoBusqueda, setTextoBusqueda] = useState("");
+  const [recepcionistasFiltrados, setRecepcionistasFiltrados] = useState([]);
+
+  // 📌 Paginación
   const [registrosPorPagina, establecerRegistrosPorPagina] = useState(5);
   const [paginaActual, establecerPaginaActual] = useState(1);
 
-  const [nuevoRecepcionista, setNuevoRecepcionista] = useState({
-    fecha: "",
-    nombre: "",
-    apellido: "",
-    hora_entrada: "",
-    hora_salida: "",
-    turno: "",
-  });
+  // 📌 Slice de paginación
+  const recepcionistasPaginados = recepcionistasFiltrados.slice(
+    (paginaActual - 1) * registrosPorPagina,
+    paginaActual * registrosPorPagina
+  );
 
+  // ✏️ Estado para edición
   const [recepcionistaEditar, setRecepcionistaEditar] = useState({
     id_recepcionista: "",
     fecha: "",
@@ -54,103 +60,128 @@ const Recepcion = () => {
     turno: "",
   });
 
+  // ➕ Estado para nuevo recepcionista
+  const [nuevoRecepcionista, setNuevoRecepcionista] = useState({
+    fecha: "",
+    nombre: "",
+    apellido: "",
+    hora_entrada: "",
+    hora_salida: "",
+    turno: "",
+  });
+
+  // 🚀 Carga inicial de datos
   useEffect(() => {
     cargarRecepcionistas();
   }, []);
 
+  // 🔎 Filtrado dinámico
   useEffect(() => {
     if (!textoBusqueda.trim()) {
       setRecepcionistasFiltrados(recepcionistas);
     } else {
+      const textoLower = textoBusqueda.toLowerCase().trim();
 
-      const texto = textoBusqueda.toLowerCase().trim();
-
-      const filtrados = recepcionistas.filter(
-        (r) =>
-          r.nombre?.toLowerCase().includes(texto) ||
-          r.apellido?.toLowerCase().includes(texto) ||
-          r.turno?.toLowerCase().includes(texto)
+      const filtrados = recepcionistas.filter((r) =>
+        r.nombre?.toLowerCase().includes(textoLower) ||
+        r.apellido?.toLowerCase().includes(textoLower) ||
+        r.turno?.toLowerCase().includes(textoLower) ||
+        r.fecha?.toString().includes(textoLower)
       );
 
       setRecepcionistasFiltrados(filtrados);
     }
   }, [textoBusqueda, recepcionistas]);
 
-  const recepcionistasPaginados = recepcionistasFiltrados.slice(
-    (paginaActual - 1) * registrosPorPagina,
-    paginaActual * registrosPorPagina
-  );
-
+  // 🔍 Manejo del input de búsqueda
   const manejoBusqueda = (e) => {
     setTextoBusqueda(e.target.value);
   };
 
+  // ✏️ Abrir modal de edición
+  const abrirModalEdicion = (recepcionista) => {
+    setRecepcionistaEditar({
+      id_recepcionista: recepcionista.id_recepcionista,
+      fecha: recepcionista.fecha,
+      nombre: recepcionista.nombre,
+      apellido: recepcionista.apellido,
+      hora_entrada: recepcionista.hora_entrada,
+      hora_salida: recepcionista.hora_salida,
+      turno: recepcionista.turno,
+    });
+    setMostrarModalEdicion(true);
+  };
+
+  // 🗑️ Abrir modal de eliminación
+  const abrirModalEliminacion = (recepcionista) => {
+    setRecepcionistaAEliminar(recepcionista);
+    setMostrarModalEliminacion(true);
+  };
+
+  // ✍️ Manejo de inputs (registro)
   const manejoCambioInput = (e) => {
     const { name, value } = e.target;
-
     setNuevoRecepcionista((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
+  // ✍️ Manejo de inputs (edición)
   const manejoCambioInputEdicion = (e) => {
     const { name, value } = e.target;
-
     setRecepcionistaEditar((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
+  // 📥 Cargar recepcionistas desde Supabase
   const cargarRecepcionistas = async () => {
     try {
-
       setCargando(true);
-
       const { data, error } = await supabase
         .from("recepcion")
         .select("*")
         .order("id_recepcionista", { ascending: true });
 
       if (error) {
+        console.error("Error al cargar recepcionistas:", error.message);
         setToast({
           mostrar: true,
-          mensaje: "Error al cargar recepcionistas",
+          mensaje: "Error al cargar recepcionistas.",
           tipo: "error",
         });
         return;
       }
 
       setRecepcionistas(data || []);
-
-    } catch (error) {
-
+    } catch (err) {
+      console.error("Excepción al cargar Recepcion:", err.message);
       setToast({
         mostrar: true,
-        mensaje: "Error inesperado al cargar datos",
+        mensaje: "Error inesperado al cargar recepcionistas.",
         tipo: "error",
       });
-
     } finally {
       setCargando(false);
     }
   };
 
+  // ➕ Agregar nuevo recepcionista
   const agregarRecepcionista = async () => {
     try {
-
       if (
         !nuevoRecepcionista.fecha ||
-        !nuevoRecepcionista.nombre.trim() ||
-        !nuevoRecepcionista.apellido.trim() ||
+        !nuevoRecepcionista.nombre?.trim() ||
+        !nuevoRecepcionista.apellido?.trim() ||
         !nuevoRecepcionista.hora_entrada ||
         !nuevoRecepcionista.hora_salida ||
-        !nuevoRecepcionista.turno.trim()
+        !nuevoRecepcionista.turno?.trim()
       ) {
         setToast({
           mostrar: true,
-          mensaje: "Debe completar todos los campos",
+          mensaje: "Debe llenar todos los campos.",
           tipo: "advertencia",
         });
         return;
@@ -161,9 +192,10 @@ const Recepcion = () => {
         .insert([nuevoRecepcionista]);
 
       if (error) {
+        console.error("Error:", error.message);
         setToast({
           mostrar: true,
-          mensaje: "Error al registrar recepcionista",
+          mensaje: "Error al registrar recepcionista.",
           tipo: "error",
         });
         return;
@@ -173,10 +205,11 @@ const Recepcion = () => {
 
       setToast({
         mostrar: true,
-        mensaje: "Recepcionista registrado correctamente",
+        mensaje: `Recepcionista ${nuevoRecepcionista.nombre} registrado exitosamente.`,
         tipo: "exito",
       });
 
+      // Reset formulario
       setNuevoRecepcionista({
         fecha: "",
         nombre: "",
@@ -188,25 +221,25 @@ const Recepcion = () => {
 
       setMostrarModal(false);
 
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err.message);
     }
   };
 
+  // ✏️ Actualizar recepcionista
   const actualizarRecepcionista = async () => {
     try {
-
       if (
         !recepcionistaEditar.fecha ||
-        !recepcionistaEditar.nombre.trim() ||
-        !recepcionistaEditar.apellido.trim() ||
+        !recepcionistaEditar.nombre?.trim() ||
+        !recepcionistaEditar.apellido?.trim() ||
         !recepcionistaEditar.hora_entrada ||
         !recepcionistaEditar.hora_salida ||
-        !recepcionistaEditar.turno.trim()
+        !recepcionistaEditar.turno?.trim()
       ) {
         setToast({
           mostrar: true,
-          mensaje: "Debe completar todos los campos",
+          mensaje: "Debe llenar todos los campos.",
           tipo: "advertencia",
         });
         return;
@@ -222,53 +255,48 @@ const Recepcion = () => {
           hora_salida: recepcionistaEditar.hora_salida,
           turno: recepcionistaEditar.turno,
         })
-        .eq(
-          "id_recepcionista",
-          recepcionistaEditar.id_recepcionista
-        );
+        .eq("id_recepcionista", recepcionistaEditar.id_recepcionista);
 
       if (error) {
+        console.error(error.message);
         setToast({
           mostrar: true,
-          mensaje: "Error al actualizar recepcionista",
+          mensaje: "Error al actualizar recepcionista.",
           tipo: "error",
         });
         return;
       }
 
       await cargarRecepcionistas();
-
       setMostrarModalEdicion(false);
 
       setToast({
         mostrar: true,
-        mensaje: "Recepcionista actualizado correctamente",
+        mensaje: "Recepcionista actualizado correctamente.",
         tipo: "exito",
       });
 
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err.message);
     }
   };
 
+  // 🗑️ Eliminar recepcionista
   const eliminarRecepcionista = async () => {
-
     if (!recepcionistaAEliminar) return;
 
     try {
+      setMostrarModalEliminacion(false);
 
       const { error } = await supabase
         .from("recepcion")
         .delete()
-        .eq(
-          "id_recepcionista",
-          recepcionistaAEliminar.id_recepcionista
-        );
+        .eq("id_recepcionista", recepcionistaAEliminar.id_recepcionista);
 
       if (error) {
         setToast({
           mostrar: true,
-          mensaje: "Error al eliminar recepcionista",
+          mensaje: "Error al eliminar recepcionista.",
           tipo: "error",
         });
         return;
@@ -276,52 +304,40 @@ const Recepcion = () => {
 
       await cargarRecepcionistas();
 
-      setMostrarModalEliminacion(false);
-
       setToast({
         mostrar: true,
-        mensaje: "Recepcionista eliminado correctamente",
+        mensaje: `Recepcionista ${recepcionistaAEliminar.nombre} eliminado.`,
         tipo: "exito",
       });
 
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err.message);
     }
-  };
-
-  const abrirModalEdicion = (recepcionista) => {
-    setRecepcionistaEditar(recepcionista);
-    setMostrarModalEdicion(true);
-  };
-
-  const abrirModalEliminacion = (recepcionista) => {
-    setRecepcionistaAEliminar(recepcionista);
-    setMostrarModalEliminacion(true);
   };
 
   return (
     <Container className="mt-3">
 
+      {/* 📌 Encabezado */}
       <Row className="align-items-center mb-3">
-        <Col xs={9}>
+        <Col xs={9} sm={7} md={7} lg={7} className="d-flex align-items-center">
           <h3 className="mb-0">
-            <i className="bi-person-badge-fill me-2"></i>
-            Recepcionistas
+            <i className="bi-person-badge-fill me-2"></i> Recepcionistas
           </h3>
         </Col>
 
-        <Col xs={3} className="text-end">
+        {/* ➕ Botón nuevo */}
+        <Col xs={3} sm={5} md={5} lg={5} className="text-end">
           <Button onClick={() => setMostrarModal(true)}>
             <i className="bi-plus-lg"></i>
-            <span className="d-none d-sm-inline ms-2">
-              Nuevo Recepcionista
-            </span>
+            <span className="d-none d-sm-inline ms-2">Nuevo Recepcionista</span>
           </Button>
         </Col>
       </Row>
 
       <hr />
 
+      {/* 🔍 Buscador */}
       <Row className="mb-4">
         <Col md={6} lg={5}>
           <CuadrosBusquedas
@@ -331,33 +347,49 @@ const Recepcion = () => {
         </Col>
       </Row>
 
+      {/* ⏳ Loader */}
       {cargando && (
         <Row className="text-center my-5">
           <Col>
-            <Spinner animation="border" variant="primary" />
-            <p className="mt-3">
-              Cargando recepcionistas...
-            </p>
+            <Spinner animation="border" variant="success" size="lg" />
+            <p className="mt-3 text-muted">Cargando recepcionistas...</p>
           </Col>
         </Row>
       )}
 
-      {!cargando && (
-        <TablaRecepcion
-          recepcionistas={recepcionistasPaginados}
-          abrirModalEdicion={abrirModalEdicion}
-          abrirModalEliminacion={abrirModalEliminacion}
+      {/* 📊 Tabla / Tarjetas */}
+      {!cargando && recepcionistas.length > 0 && (
+        <Row>
+          <Col lg={12} className="d-none d-lg-block">
+            <TablaRecepcion
+              recepcion={recepcionistasPaginados}
+              abrirModalEdicion={abrirModalEdicion}
+              abrirModalEliminacion={abrirModalEliminacion}
+            />
+          </Col>
+
+          <Col xs={12} sm={12} md={12} className="d-lg-none">
+            <TarjetaRecepcion
+              recepcion={recepcionistasPaginados}
+              abrirModalEdicion={abrirModalEdicion}
+              abrirModalEliminacion={abrirModalEliminacion}
+            />
+          </Col>
+        </Row>
+      )}
+
+      {/* 📄 Paginación */}
+      {recepcionistasFiltrados.length > 0 && (
+        <Paginacion
+          registrosPorPagina={registrosPorPagina}
+          totalRegistros={recepcionistasFiltrados.length}
+          paginaActual={paginaActual}
+          establecerPaginaActual={establecerPaginaActual}
+          establecerRegistrosPorPagina={establecerRegistrosPorPagina}
         />
       )}
 
-      <Paginacion
-        registrosPorPagina={registrosPorPagina}
-        totalRegistros={recepcionistasFiltrados.length}
-        paginaActual={paginaActual}
-        establecerPaginaActual={establecerPaginaActual}
-        establecerRegistrosPorPagina={establecerRegistrosPorPagina}
-      />
-
+      {/* 📦 Modales */}
       <ModalRegistroRecepcion
         mostrarModal={mostrarModal}
         setMostrarModal={setMostrarModal}
@@ -381,16 +413,12 @@ const Recepcion = () => {
         recepcionista={recepcionistaAEliminar}
       />
 
+      {/* 🔔 Toast */}
       <NotificacionOperacion
         mostrar={toast.mostrar}
         mensaje={toast.mensaje}
         tipo={toast.tipo}
-        onCerrar={() =>
-          setToast({
-            ...toast,
-            mostrar: false,
-          })
-        }
+        onCerrar={() => setToast({ ...toast, mostrar: false })}
       />
 
     </Container>
@@ -398,4 +426,3 @@ const Recepcion = () => {
 };
 
 export default Recepcion;
-

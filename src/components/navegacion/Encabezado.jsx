@@ -5,11 +5,11 @@ import logo from "../../assets/logo.png";
 import { supabase } from "../../database/supabaseconfig";
 import ChatIA from "../ia/chatIA";
 
-
 const Encabezado = () => {
 
     const [mostrarMenu, setMostrarMenu] = useState(false);
     const [mostrarChatIA, setMostrarChatIA] = useState(false);
+
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -42,10 +42,10 @@ const Encabezado = () => {
         }
     };
 
-    const esLogin = location.pathname === "/login";
+    const esLogin = rutaActual === "/login";
 
     const esHabitacion =
-        location.pathname === "/habitacion" &&
+        rutaActual === "/habitacion" &&
         localStorage.getItem("usuario-supabase") === null;
 
     let contenidoMenu;
@@ -53,161 +53,139 @@ const Encabezado = () => {
     if (esLogin) {
 
         contenidoMenu = (
-            <Nav className="ms-auto pe-2">
-
+            <Nav className="ms-auto">
                 <Nav.Link
                     onClick={() => manejarNavegacion("/login")}
                     className="text-white"
                 >
-                    <i className="bi-person-fill-lock me-2"></i>
-
+                    <i className="bi bi-person-fill-lock me-2"></i>
                     Iniciar sesión
                 </Nav.Link>
+            </Nav>
+        );
 
+    } else if (esHabitacion) {
+
+        contenidoMenu = (
+            <Nav className="ms-auto">
+                <Nav.Link
+                    onClick={() => manejarNavegacion("/habitacion")}
+                    className={
+                        rutaActual === "/habitacion"
+                            ? "menu-activo"
+                            : "text-white"
+                    }
+                >
+                    <i className="bi bi-images me-2"></i>
+                    <strong>Habitaciones</strong>
+                </Nav.Link>
             </Nav>
         );
 
     } else {
 
-        if (esHabitacion) {
+        contenidoMenu = (
+            <>
+                <Nav className="ms-auto d-flex align-items-center gap-2">
 
-            contenidoMenu = (
-                <Nav className="ms-auto pe-2">
+                    <Nav.Link
+                        onClick={() => manejarNavegacion("/")}
+                        className={rutaActual === "/" ? "activo-inicio" : "text-white"}
+                    >
+                        <i className="bi bi-house-fill me-1 icon-inicio"></i>
+                        <strong>Inicio</strong>
+                    </Nav.Link>
+
+                    <Nav.Link
+                        onClick={() => manejarNavegacion("/huesped")}
+                        className={rutaActual === "/huesped" ? "menu-activo" : "text-white"}
+                    >
+                        <i className="bi bi-people-fill me-1"></i>
+                        <strong>Huéspedes</strong>
+                    </Nav.Link>
 
                     <Nav.Link
                         onClick={() => manejarNavegacion("/habitacion")}
-                        className={
-                            rutaActual === "/habitacion"
-                                ? "menu-activo"
-                                : "text-white"
-                        }
+                        className={rutaActual === "/habitacion" ? "menu-activo" : "text-white"}
                     >
-                        <i className="bi-images me-2"></i>
-
-                        <strong>Habitacion</strong>
+                        <i className="bi bi-door-open-fill me-1"></i>
+                        <strong>Habitaciones</strong>
                     </Nav.Link>
 
-                </Nav>
-            );
+                    <Nav.Link
+                        onClick={() => manejarNavegacion("/reserva")}
+                        className={rutaActual === "/reserva" ? "menu-activo" : "text-white"}
+                    >
+                        <i className="bi bi-calendar-check-fill me-1"></i>
+                        <strong>Reservas</strong>
+                    </Nav.Link>
 
-        } else {
+                    <Nav.Link
+                        onClick={() => manejarNavegacion("/recepcion")}
+                        className={rutaActual === "/recepcion" ? "menu-activo" : "text-white"}
+                    >
+                        <i className="bi bi-person-workspace me-1"></i>
+                        <strong>Recepción</strong>
+                    </Nav.Link>
 
-            contenidoMenu = (
-                <>
-                    <Nav className="ms-auto pe-2">
+                    <Nav.Link
+                        onClick={() => manejarNavegacion("/dashboard")}
+                        className={rutaActual === "/dashboard" ? "menu-activo" : "text-white"}
+                    >
+                        <i className="bi bi-bar-chart-fill me-1"></i>
+                        <strong>Dashboard</strong>
+                    </Nav.Link>
 
+                    <Nav.Link
+                        onClick={() => setMostrarChatIA(true)}
+                        className="text-white"
+                        title="Asistente IA"
+                    >
+                        <i className="bi bi-robot fs-5"></i>
+                    </Nav.Link>
+
+                    {!mostrarMenu && (
                         <Nav.Link
-                            onClick={() => manejarNavegacion("/")}
-                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
-                        >
-                            {mostrarMenu ? <i className="bi-house-fill me-2"></i> : null}
-                            <strong>Inicio</strong>
-                        </Nav.Link>
-
-                        <Nav.Link
-                            onClick={() => manejarNavegacion("/huesped")}
-                            className={mostrarMenu ? "menu-activo" : "text-white"}
-                        >
-                            {mostrarMenu ? (
-                                <i className="bi-people-fill me-2"></i>
-                            ) : null}
-                            <strong>Huéspedes</strong>
-                        </Nav.Link>
-
-                        <Nav.Link
-                            onClick={() => manejarNavegacion("/habitacion")}
-                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
-                        >
-                            {mostrarMenu ? (
-                                <i className="bi-door-open-fill me-2"></i>
-                            ) : null}
-                            <strong>Habitaciones</strong>
-                        </Nav.Link>
-
-                        <Nav.Link
-                            onClick={() => manejarNavegacion("/reserva")}
-                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
-                        >
-                            {mostrarMenu ? (
-                                <i className="bi-calendar-check-fill me-2"></i>
-                            ) : null}
-                            <strong>Reservas</strong>
-                        </Nav.Link>
-
-                        <Nav.Link
-                            onClick={() => manejarNavegacion("/recepcion")}
-                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
-                        >
-                            {mostrarMenu ? (
-                                <i className="bi-person-workspace me-2"></i>
-                            ) : null}
-                            <strong>Recepción</strong>
-                        </Nav.Link>
-
-                        <Nav.Link
-                            onClick={() => manejarNavegacion("/dashboard")}
-                            className={mostrarMenu ? "color-texto-marca" : "text-white"}
-                        >
-                            {mostrarMenu ? (
-                                <i className="bi-bar-chart-fill me-2"></i>
-                            ) : null}
-                            <strong>Dashboard</strong>
-                        </Nav.Link>
-
-                        {/* Chat IA */}
-                        <Nav.Link
-                            onClick={() => setMostrarChatIA(true)}
+                            onClick={cerrarSesion}
                             className="text-white"
+                            title="Cerrar sesión"
                         >
-                            <i className="bi bi-robot me-2"></i>
+                            <i className="bi bi-box-arrow-right fs-5"></i>
                         </Nav.Link>
-
-                        <hr />
-
-                        {/* Cerrar sesión */}
-                        {mostrarMenu ? null : (
-                            <Nav.Link
-                                onClick={cerrarSesion}
-                                className="text-white"
-                            >
-                                <i className="bi-box-arrow-right me-2"></i>
-                            </Nav.Link>
-                        )}
-
-                        <hr />
-                    </Nav>
-
-                    {/* info usuario */}
-                    {mostrarMenu && (
-                        <div className="mt-3 p-3 rounded bg-light text-dark">
-                            <p className="mb-2">
-                                <i className="bi-envelope-fill me-2"></i>
-                                {localStorage.getItem("usuario-supabase")?.toLowerCase() || "Usuario"}
-                            </p>
-
-                            <button
-                                className="btn btn-outline-danger mt-3 w-100"
-                                onClick={cerrarSesion}
-                            >
-                                <i className="bi-box-arrow-right me-2"></i>
-                                Cerrar sesión
-                            </button>
-                        </div>
                     )}
-                </>
-            );
-        }
+
+                </Nav>
+
+                {mostrarMenu && (
+                    <div className="mt-3 p-3 rounded bg-light text-dark">
+
+                        <p className="mb-2">
+                            <i className="bi bi-envelope-fill me-2"></i>
+                            {localStorage.getItem("usuario-supabase")?.toLowerCase() || "Usuario"}
+                        </p>
+
+                        <button
+                            className="btn btn-outline-danger mt-2 w-100"
+                            onClick={cerrarSesion}
+                        >
+                            <i className="bi bi-box-arrow-right me-2"></i>
+                            Cerrar sesión
+                        </button>
+
+                    </div>
+                )}
+            </>
+        );
     }
 
     return (
-
         <Navbar
-            expand="md"
+            expand="lg"
             fixed="top"
             className="color-navbar shadow-lg"
             variant="dark"
         >
-            <Container>
+            <Container fluid className="px-4">
 
                 <Navbar.Brand
                     onClick={() =>
@@ -215,29 +193,31 @@ const Encabezado = () => {
                             esHabitacion ? "/habitacion" : "/"
                         )
                     }
-                    className="text-white fw-bold d-flex align-items-center"
+                    className="text-white fw-bold d-flex align-items-center me-4"
                     style={{ cursor: "pointer" }}
                 >
                     <img
-                        alt=""
                         src={logo}
-                        width="45"
-                        height="45"
-                        className="d-inline-block me-2"
+                        alt="Logo"
+                        width="40"
+                        height="40"
+                        className="rounded-circle me-2"
                     />
 
-                    <strong>
-                        <h4 className="mb-0">
-                            Hoteleria Posada el Recuerdo
+                    <div>
+                        <h4 className="mb-0 fw-bold">
+                           Hotel "Posada El Recuerdo"
                         </h4>
-                    </strong>
+                    </div>
+
                 </Navbar.Brand>
-                <ChatIA mostrar={mostrarChatIA}
-                 onCerrar={() => 
-                 setMostrarChatIA(false)} />
+
+                <ChatIA
+                    mostrar={mostrarChatIA}
+                    onCerrar={() => setMostrarChatIA(false)}
+                />
 
                 {!esLogin && (
-
                     <Navbar.Toggle
                         aria-controls="menu-offcanvas"
                         onClick={manejarToggle}
@@ -251,11 +231,9 @@ const Encabezado = () => {
                     onHide={() => setMostrarMenu(false)}
                 >
                     <Offcanvas.Header closeButton>
-
                         <Offcanvas.Title>
-                            Menú Hoteleria
+                            Menú Hotelero
                         </Offcanvas.Title>
-
                     </Offcanvas.Header>
 
                     <Offcanvas.Body>
@@ -263,9 +241,10 @@ const Encabezado = () => {
                     </Offcanvas.Body>
 
                 </Navbar.Offcanvas>
-            </Container>
 
+            </Container>
         </Navbar>
     );
 };
+
 export default Encabezado;

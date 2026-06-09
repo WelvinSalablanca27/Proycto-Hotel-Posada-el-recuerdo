@@ -137,3 +137,95 @@ body {
 .nav-link:hover {
   background-color: #dbeafe;
 }
+
+ .tabla-recepcion thead th {
+    background-color: #080eca; /* verde Bootstrap */
+    color: white;
+    border-color: #080eca;
+}
+
+.tabla-recepcion thead th {
+    background-color: #080eca; /* verde Bootstrap */
+    color: white;
+    border-color: #080eca;
+}
+.tarjeta-recepcion-capa {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 8px;
+}
+
+.tarjeta-recepcion-botones-capa {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+/* =========================
+   TARJETA RECEPCIÓN
+========================= */
+
+.tarjeta-recepcion-contenedor {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.tarjeta-recepcion-contenedor:hover {
+  transform: translateY(-3px);
+}
+
+.tarjeta-recepcion-cuerpo {
+  transition: opacity 150ms ease;
+}
+
+.tarjeta-recepcion-cuerpo-activo {
+  opacity: 0.4;
+}
+
+.tarjeta-recepcion-cuerpo-inactivo {
+  opacity: 1;
+}
+
+.tarjeta-recepcion-header {
+  background-color: #080eca;
+  color: white;
+  font-weight: bold;
+}
+
+.tarjeta-recepcion-info {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.tarjeta-recepcion-info strong {
+  color: #080eca;
+}
+
+/* =========================
+   CAPA ACCIONES
+========================= */
+
+.tarjeta-recepcion-capa {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 8px;
+}
+
+.tarjeta-recepcion-botones-capa {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
