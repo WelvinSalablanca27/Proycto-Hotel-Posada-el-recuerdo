@@ -258,6 +258,91 @@ const Inicio = () => {
     }
   };
 
+  const generarPdfGeneral = async () => {
+    try {
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      // ======================
+      // TÍTULO
+      // ======================
+      pdf.setFontSize(18);
+      pdf.setTextColor("#330775");
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Reporte General del Hotel", 14, 15);
+
+      pdf.setFontSize(10);
+      pdf.setTextColor("#000000");
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Periodo: ${fechaDesde} - ${fechaHasta}`, 14, 22);
+
+      // ======================
+      // RESUMEN
+      // ======================
+      pdf.setFontSize(14);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Resumen General", 14, 35);
+
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+
+      pdf.text(`Ingresos: C$ ${estadisticas.totalIngresos.toFixed(2)}`, 14, 45);
+      pdf.text(`Reservas: ${estadisticas.reservas}`, 14, 52);
+      pdf.text(`Efectivo: C$ ${estadisticas.reservasEfectivo.toFixed(2)}`, 14, 59);
+      pdf.text(`Tarjeta: C$ ${estadisticas.reservasTarjeta.toFixed(2)}`, 14, 66);
+      pdf.text(`Habitaciones ocupadas: ${estadisticas.habitacionesOcupadas}`, 14, 73);
+
+      // ======================
+      // GRÁFICO HORA
+      // ======================
+      const canvas1 = await html2canvas(graficoHoraRef.current);
+      const img1 = canvas1.toDataURL("image/png");
+
+      pdf.addImage(img1, "PNG", 10, 80, 190, 70);
+
+      // ======================
+      // NUEVA PÁGINA
+      // ======================
+      pdf.addPage();
+
+      pdf.setFontSize(14);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Tipos de Habitación", 14, 15);
+
+      // ======================
+      // GRÁFICO PIE
+      // ======================
+      const canvas2 = await html2canvas(graficoTipoHabitacionRef.current);
+      const img2 = canvas2.toDataURL("image/png");
+
+      pdf.addImage(img2, "PNG", 10, 25, 190, 90);
+
+      // ======================
+      // TABLA TIPOS
+      // ======================
+      autoTable(pdf, {
+        startY: 120,
+        head: [["Tipo Habitación", "Valor"]],
+        body: estadisticas.reservasPorTipoHabitacion.map(item => [
+          item.name,
+          item.value
+        ])
+      });
+
+      // ======================
+      // GUARDAR
+      // ======================
+      const fechaActual = new Date().toLocaleDateString("en-CA", {
+        timeZone: "America/Managua"
+      });
+
+      pdf.save(`ReporteGeneral_${fechaActual}.pdf`);
+
+    } catch (error) {
+      console.error(error);
+      alert("Error generando PDF general");
+    }
+  };
+
   const [estadisticas, setEstadisticas] = useState({
     totalIngresos: 0,
     reservas: 0,
@@ -451,22 +536,45 @@ const Inicio = () => {
       <h6>Posada El Recuerdo</h6>
 
       {/* FILTROS */}
+      {/* FILTROS */}
       <Row className="mb-4">
 
         <Col md={3}>
-          <Form.Control type="date" value={fechaDesde}
-            onChange={(e) => setFechaDesde(e.target.value)} />
+          <Form.Control
+            type="date"
+            value={fechaDesde}
+            onChange={(e) => setFechaDesde(e.target.value)}
+          />
         </Col>
 
         <Col md={3}>
-          <Form.Control type="date" value={fechaHasta}
-            onChange={(e) => setFechaHasta(e.target.value)} />
+          <Form.Control
+            type="date"
+            value={fechaHasta}
+            onChange={(e) => setFechaHasta(e.target.value)}
+          />
         </Col>
 
-        <Col md={3}>
-          <Button onClick={descargarExcel}>
+        <Col md={6} className="d-flex gap-2">
+
+          {/* EXPORTAR EXCEL */}
+          <Button
+            variant="success"
+            onClick={descargarExcel}
+          >
+            <i className="bi bi-file-earmark-excel me-2"></i>
             Exportar Excel
           </Button>
+
+          {/* PDF GENERAL (IMPORTANTE: esta función debe existir) */}
+          <Button
+            variant="danger"
+            onClick={generarPdfGeneral}
+          >
+            <i className="bi bi-file-earmark-pdf me-2"></i>
+            PDF General
+          </Button>
+
         </Col>
 
       </Row>
