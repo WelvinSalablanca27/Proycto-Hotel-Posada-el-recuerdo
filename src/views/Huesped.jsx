@@ -1,43 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Container, Row, Col, Button, Spinner, Alert } from "react-bootstrap";
 import { supabase } from "../database/supabaseconfig";
 
-import TablaHuesped from "../components/huesped/TablaHuesped";
+import TarjetaHuesped from "../components/huesped/TarjetaHuesped";
 import ModalRegistroHuesped from "../components/huesped/ModalRegistroHuesped";
 import ModalEdicionHuesped from "../components/huesped/ModalEdicionHuesped";
 import ModalEliminacionHuesped from "../components/huesped/ModalEliminacionHuesped";
-import CuadrosBusquedas from "../components/busquedas/CuadroBusquedas";
+import TablaHuesped from "../components/huesped/TablaHuesped";
+
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 import Paginacion from "../components/ordenamiento/Paginacion";
 import NotificacionOperacion from "../components/NotificacionOperacion";
 
 const Huespedes = () => {
+  const [toast, setToast] = useState({ mostrar: false, mensaje: "", tipo: "" });
+  const [mostrarModal, setMostrarModal] = useState(false);
 
   const [huespedes, setHuespedes] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  const [mostrarModal, setMostrarModal] = useState(false);
-  const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
   const [mostrarModalEliminacion, setMostrarModalEliminacion] = useState(false);
+  const [huespedAEliminar, setHuespedAEliminar] = useState(null);
+
+  const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
 
   const [textoBusqueda, setTextoBusqueda] = useState("");
+  const [huespedesFiltrados, setHuespedesFiltrados] = useState([]);
 
-  const [paginaActual, establecerPaginaActual] = useState(1);
   const [registrosPorPagina, establecerRegistrosPorPagina] = useState(5);
-
-  const [toast, setToast] = useState({
-    mostrar: false,
-    mensaje: "",
-    tipo: "",
-  });
-
-  const [nuevoHuesped, setNuevoHuesped] = useState({
-    primer_nombre: "",
-    segundo_nombre: "",
-    primer_apellido: "",
-    segundo_apellido: "",
-    cedula_pasaporte: "",
-    lugar_origen: "",
-  });
+  const [paginaActual, establecerPaginaActual] = useState(1);
 
   const [huespedEditar, setHuespedEditar] = useState({
     id_huesped: "",
@@ -49,89 +40,100 @@ const Huespedes = () => {
     lugar_origen: "",
   });
 
-  const [huespedAEliminar, setHuespedAEliminar] = useState(null);
+  const [nuevoHuesped, setNuevoHuesped] = useState({
+    primer_nombre: "",
+    segundo_nombre: "",
+    primer_apellido: "",
+    segundo_apellido: "",
+    cedula_pasaporte: "",
+    lugar_origen: "",
+  });
 
-  // 📌 Cargar huéspedes
-  const cargarHuespedes = async () => {
-    setCargando(true);
+  const huespedesPaginados = huespedesFiltrados.slice(
+    (paginaActual - 1) * registrosPorPagina,
+    paginaActual * registrosPorPagina
+  );
 
-    const { data, error } = await supabase
-      .from("huesped")
-      .select("*")
-      .order("id_huesped", { ascending: true });
-
-    if (error) {
-      console.error("Error al cargar huéspedes:", error.message);
-    } else {
-      setHuespedes(data);
-    }
-
-    setCargando(false);
+  const manejarBusqueda = (e) => {
+    setTextoBusqueda(e.target.value);
   };
 
   useEffect(() => {
-    cargarHuespedes();
-  }, []);
+    if (!textoBusqueda.trim()) {
+      setHuespedesFiltrados(huespedes);
+    } else {
+      const textoLower = textoBusqueda.toLowerCase().trim();
+      const filtrados = huespedes.filter((h) =>
+        `${h.primer_nombre} ${h.segundo_nombre} ${h.primer_apellido} ${h.segundo_apellido}`
+          .toLowerCase()
+          .includes(textoLower) ||
+        h.cedula_pasaporte?.toLowerCase().includes(textoLower) ||
+        h.lugar_origen?.toLowerCase().includes(textoLower)
+      );
+      setHuespedesFiltrados(filtrados);
+    }
+  }, [textoBusqueda, huespedes]);
 
-  // 🔍 Buscar
-  const manejoBusqueda = (e) => {
-    setTextoBusqueda(e.target.value);
-    establecerPaginaActual(1);
+  const abrirModalEdicion = (huesped) => {
+    setHuespedEditar({
+      id_huesped: huesped.id_huesped,
+      primer_nombre: huesped.primer_nombre,
+      segundo_nombre: huesped.segundo_nombre,
+      primer_apellido: huesped.primer_apellido,
+      segundo_apellido: huesped.segundo_apellido,
+      cedula_pasaporte: huesped.cedula_pasaporte,
+      lugar_origen: huesped.lugar_origen,
+    });
+    setMostrarModalEdicion(true);
   };
 
-  const huespedesFiltrados = huespedes.filter((huesped) =>
-    ` ${huesped.primer_nombre} ${huesped.primer_apellido}`
-      .toLowerCase()
-      .includes(textoBusqueda.toLowerCase())
-  );
+  const abrirModalEliminacion = (huesped) => {
+    setHuespedAEliminar(huesped);
+    setMostrarModalEliminacion(true);
+  };
 
-  // ✏️ Inputs registro
   const manejoCambioInput = (e) => {
     const { name, value } = e.target;
-
-    setNuevoHuesped({
-      ...nuevoHuesped,
+    setNuevoHuesped((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
-  // ✏️ Inputs edición
   const manejoCambioInputEdicion = (e) => {
     const { name, value } = e.target;
-
-    setHuespedEditar({
-      ...huespedEditar,
+    setHuespedEditar((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
-  // ➕ Agregar huésped
   const agregarHuesped = async () => {
     try {
-
-      setMostrarModal(false);
-
-      const { error } = await supabase
-        .from("huesped")
-        .insert([nuevoHuesped]);
-
-      if (error) {
-        console.error("Error al agregar huésped:", error.message);
-
+      if (!nuevoHuesped.primer_nombre.trim() || !nuevoHuesped.primer_apellido.trim() || !nuevoHuesped.cedula_pasaporte.trim()) {
         setToast({
           mostrar: true,
-          mensaje: "Error al agregar huésped.",
-          tipo: "error",
+          mensaje: "Debe llenar nombre, apellido y cédula/pasaporte.",
+          tipo: "advertencia",
         });
-
         return;
       }
 
-      await cargarHuespedes();
+      const { error } = await supabase.from("huesped").insert([nuevoHuesped]);
+
+      if (error) {
+        console.error("Error al agregar huésped:", error.message);
+        setToast({
+          mostrar: true,
+          mensaje: "Error al registrar huésped.",
+          tipo: "error",
+        });
+        return;
+      }
 
       setToast({
         mostrar: true,
-        mensaje: "Huésped agregado exitosamente.",
+        mensaje: `Huésped ${nuevoHuesped.primer_nombre} ${nuevoHuesped.primer_apellido} registrado exitosamente.`,
         tipo: "exito",
       });
 
@@ -143,37 +145,97 @@ const Huespedes = () => {
         cedula_pasaporte: "",
         lugar_origen: "",
       });
-
+      setMostrarModal(false);
+      await cargarHuespedes();
     } catch (err) {
-
       console.error("Excepción al agregar huésped:", err.message);
-
       setToast({
         mostrar: true,
-        mensaje: "Error inesperado al agregar huésped.",
+        mensaje: "Error inesperado al registrar huésped.",
         tipo: "error",
       });
     }
   };
 
-  // 📌 Abrir modal edición
-  const abrirModalEdicion = (huesped) => {
-    setHuespedEditar(huesped);
-    setMostrarModalEdicion(true);
+  const cargarHuespedes = async () => {
+    try {
+      setCargando(true);
+      const { data, error } = await supabase
+        .from("huesped")
+        .select("*")
+        .order("id_huesped", { ascending: true });
+
+      if (error) {
+        console.error("Error al cargar huéspedes:", error.message);
+        setToast({
+          mostrar: true,
+          mensaje: "Error al cargar huéspedes.",
+          tipo: "error",
+        });
+        return;
+      }
+      setHuespedes(data || []);
+    } catch (err) {
+      console.error("Excepción al cargar huéspedes:", err.message);
+      setToast({
+        mostrar: true,
+        mensaje: "Error inesperado al cargar huéspedes.",
+        tipo: "error",
+      });
+    } finally {
+      setCargando(false);
+    }
   };
 
-  // 📌 Abrir modal eliminación
-  const abrirModalEliminacion = (huesped) => {
-    setHuespedAEliminar(huesped);
-    setMostrarModalEliminacion(true);
+  useEffect(() => {
+    cargarHuespedes();
+  }, []);
+
+  const eliminarHuesped = async () => {
+    if (!huespedAEliminar) return;
+    try {
+      setMostrarModalEliminacion(false);
+      const { error } = await supabase
+        .from("huesped")
+        .delete()
+        .eq("id_huesped", huespedAEliminar.id_huesped);
+
+      if (error) {
+        setToast({
+          mostrar: true,
+          mensaje: `Error al eliminar el huésped.`,
+          tipo: "error",
+        });
+        return;
+      }
+
+      await cargarHuespedes();
+      setToast({
+        mostrar: true,
+        mensaje: `Huésped eliminado exitosamente.`,
+        tipo: "exito",
+      });
+    } catch (err) {
+      setToast({
+        mostrar: true,
+        mensaje: "Error inesperado al eliminar huésped.",
+        tipo: "error",
+      });
+    }
   };
 
-  // ✏️ Actualizar huésped
   const actualizarHuesped = async () => {
     try {
+      if (!huespedEditar.primer_nombre.trim() || !huespedEditar.primer_apellido.trim() || !huespedEditar.cedula_pasaporte.trim()) {
+        setToast({
+          mostrar: true,
+          mensaje: "Debe llenar nombre, apellido y cédula/pasaporte.",
+          tipo: "advertencia",
+        });
+        return;
+      }
 
       setMostrarModalEdicion(false);
-
       const { error } = await supabase
         .from("huesped")
         .update({
@@ -187,30 +249,21 @@ const Huespedes = () => {
         .eq("id_huesped", huespedEditar.id_huesped);
 
       if (error) {
-
-        console.error("Error al actualizar huésped:", error.message);
-
         setToast({
           mostrar: true,
           mensaje: "Error al actualizar huésped.",
           tipo: "error",
         });
-
         return;
       }
 
       await cargarHuespedes();
-
       setToast({
         mostrar: true,
-        mensaje: "Actualización realizada correctamente.",
+        mensaje: `Huésped actualizado exitosamente.`,
         tipo: "exito",
       });
-
     } catch (err) {
-
-      console.error("Excepción al actualizar huésped:", err.message);
-
       setToast({
         mostrar: true,
         mensaje: "Error inesperado al actualizar huésped.",
@@ -219,100 +272,48 @@ const Huespedes = () => {
     }
   };
 
-  // 🗑️ Eliminar huésped
-  const eliminarHuesped = async () => {
-
-    if (!huespedAEliminar) return;
-
-    try {
-
-      setMostrarModalEliminacion(false);
-
-      const { error } = await supabase
-        .from("huesped")
-        .delete()
-        .eq("id_huesped", huespedAEliminar.id_huesped);
-
-      if (error) {
-
-        console.error("Error al eliminar huésped:", error.message);
-
-        setToast({
-          mostrar: true,
-          mensaje: "Error al eliminar huésped.",
-          tipo: "error",
-        });
-
-        return;
-      }
-
-      await cargarHuespedes();
-
-      setToast({
-        mostrar: true,
-        mensaje: "Huésped eliminado exitosamente.",
-        tipo: "exito",
-      });
-
-    } catch (err) {
-
-      console.error("Excepción al eliminar huésped:", err.message);
-
-      setToast({
-        mostrar: true,
-        mensaje: "Error inesperado al eliminar huésped.",
-        tipo: "error",
-      });
-    }
-  };
-
   return (
     <Container className="mt-3">
-
-      {/* 📌 Encabezado */}
+      {/* Título y botón Nuevo Huésped */}
       <Row className="align-items-center mb-3">
-
         <Col xs={9} sm={7} md={7} lg={7} className="d-flex align-items-center">
           <h3 className="mb-0">
-            <i className="bi bi-people-fill me-2"></i> Huéspedes
+            <i className="bi-people-fill me-2"></i> Huéspedes
           </h3>
         </Col>
-
         <Col xs={3} sm={5} md={5} lg={5} className="text-end">
           <Button onClick={() => setMostrarModal(true)} size="md">
             <i className="bi-plus-lg"></i>
-            <span className="d-none d-sm-inline ms-2">
-              Nuevo Huésped
-            </span>
+            <span className="d-none d-sm-inline ms-2">Nuevo Huésped</span>
           </Button>
         </Col>
-
       </Row>
-
       <hr />
 
-      {/* 🔍 Busqueda */}
+      {/* Búsqueda */}
       <Row className="mb-4">
         <Col md={6} lg={5}>
-          <CuadrosBusquedas
+          <CuadroBusquedas
             textoBusqueda={textoBusqueda}
-            manejarCambioBusqueda={manejoBusqueda}
+            manejarCambioBusqueda={manejarBusqueda}
+            placeholder="Buscar por nombre, apellido, cédula o lugar de origen..."
           />
         </Col>
       </Row>
 
-      {/* ⚠️ Sin resultados */}
+      {/* Mensaje sin resultados */}
       {!cargando && textoBusqueda.trim() && huespedesFiltrados.length === 0 && (
-        <Row>
+        <Row className="mb-4">
           <Col>
-            <div className="alert alert-info text-center">
-              No se encontraron huéspedes con "{textoBusqueda}"
-            </div>
+            <Alert variant="info" className="text-center">
+              <i className="bi bi-info-circle me-2"></i>
+              No se encontraron huéspedes que coincidan con "{textoBusqueda}".
+            </Alert>
           </Col>
         </Row>
       )}
 
-      {/* ⏳ Loader */}
+      {/* Cargando */}
       {cargando && (
         <Row className="text-center my-5">
           <Col>
@@ -322,12 +323,19 @@ const Huespedes = () => {
         </Row>
       )}
 
-      {/* 📊 Tabla */}
+      {/* Lista */}
       {!cargando && huespedesFiltrados.length > 0 && (
         <Row>
-          <Col xs={12}>
+          <Col xs={12} sm={12} md={12} className="d-lg-none">
+            <TarjetaHuesped
+              huespedes={huespedesPaginados}
+              abrirModalEdicion={abrirModalEdicion}
+              abrirModalEliminacion={abrirModalEliminacion}
+            />
+          </Col>
+          <Col lg={12} className="d-none d-lg-block">
             <TablaHuesped
-              huespedes={huespedesFiltrados}
+              huespedes={huespedesPaginados}
               abrirModalEdicion={abrirModalEdicion}
               abrirModalEliminacion={abrirModalEliminacion}
             />
@@ -335,31 +343,7 @@ const Huespedes = () => {
         </Row>
       )}
 
-      {/* 📦 Modales */}
-      <ModalRegistroHuesped
-        mostrarModal={mostrarModal}
-        setMostrarModal={setMostrarModal}
-        nuevoHuesped={nuevoHuesped}
-        manejoCambioInput={manejoCambioInput}
-        agregarHuesped={agregarHuesped}
-      />
-
-      <ModalEdicionHuesped
-        mostrarModalEdicion={mostrarModalEdicion}
-        setMostrarModalEdicion={setMostrarModalEdicion}
-        huespedEditado={huespedEditar}
-        manejoCambioInput={manejoCambioInputEdicion}
-        actualizarHuesped={actualizarHuesped}
-      />
-
-      <ModalEliminacionHuesped
-        mostrarModalEliminacion={mostrarModalEliminacion}
-        setMostrarModalEliminacion={setMostrarModalEliminacion}
-        eliminarHuesped={eliminarHuesped}
-        huesped={huespedAEliminar}
-      />
-
-      {/* 📄 Paginación */}
+      {/* Paginación */}
       {huespedesFiltrados.length > 0 && (
         <Paginacion
           registrosPorPagina={registrosPorPagina}
@@ -370,14 +354,36 @@ const Huespedes = () => {
         />
       )}
 
-      {/* 🔔 Notificaciones */}
+      {/* Modales */}
+      <ModalRegistroHuesped
+        mostrarModal={mostrarModal}
+        setMostrarModal={setMostrarModal}
+        nuevoHuesped={nuevoHuesped}
+        manejoCambioInput={manejoCambioInput}
+        agregarHuesped={agregarHuesped}
+      />
+
+      <ModalEliminacionHuesped
+        mostrarModalEliminacion={mostrarModalEliminacion}
+        setMostrarModalEliminacion={setMostrarModalEliminacion}
+        eliminarHuesped={eliminarHuesped}
+        huesped={huespedAEliminar}
+      />
+
+      <ModalEdicionHuesped
+        mostrarModalEdicion={mostrarModalEdicion}
+        setMostrarModalEdicion={setMostrarModalEdicion}
+        huespedEditado={huespedEditar}  
+        manejoCambioInput={manejoCambioInputEdicion}
+        actualizarHuesped={actualizarHuesped}
+      />
+
       <NotificacionOperacion
         mostrar={toast.mostrar}
         mensaje={toast.mensaje}
         tipo={toast.tipo}
         onCerrar={() => setToast({ ...toast, mostrar: false })}
       />
-
     </Container>
   );
 };

@@ -1,99 +1,241 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import { supabase } from "../database/supabaseconfig";
-
-// 🔍 Buscador y paginación
-import CuadrosBusquedas from "../components/busquedas/CuadroBusquedas";
-import Paginacion from "../components/ordenamiento/Paginacion";
-
-// 📦 Modales y componentes de Reserva
-import ModalRegistroReserva from "../components/reserva/ModalRegistroReserva";
-import ModalEdicionReserva from "../components/reserva/ModalEdicionReserva";
-import ModalEliminacionReserva from "../components/reserva/ModalEliminacionReserva";
-
 import NotificacionOperacion from "../components/NotificacionOperacion";
-
-// 📊 Tabla y tarjetas
-import TarjetaReserva from "../components/reserva/TarjetasReserva";
-// import TablaReserva from "../components/reserva/TablaReserva";
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
+import Paginacion from "../components/ordenamiento/Paginacion";
+import TablaReserva from "../components/reserva/TablaReserva";
+import TarjetaReserva from "../components/reserva/TarjetaReserva";
+import FormularioReserva from "../components/reserva/FormularioReserva";
 
 const Reserva = () => {
 
-    // 🔔 Toast
     const [toast, setToast] = useState({
         mostrar: false,
         mensaje: "",
-        tipo: "",
+        tipo: ""
     });
 
-    // 📌 Estados modales
-    const [mostrarModal, setMostrarModal] = useState(false);
-
-    const [mostrarModalEdicion, setMostrarModalEdicion] =
-        useState(false);
-
-    const [mostrarModalEliminacion, setMostrarModalEliminacion] =
-        useState(false);
-
-    // 📊 Reservas
     const [reservas, setReservas] = useState([]);
-
     const [cargando, setCargando] = useState(true);
 
-    // 🗑️ Reserva a eliminar
-    const [reservaAEliminar, setReservaAEliminar] =
-        useState(null);
+    const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-    // 🔍 Busqueda
+    const [reservaAEditar, setReservaAEditar] = useState(null);
+
+    const [huespedes, setHuespedes] = useState([]);
+    const [habitaciones, setHabitaciones] = useState([]);
+    const [recepcionistas, setRecepcionistas] = useState([]);
+
+    const [huespedSeleccionado, setHuespedSeleccionado] = useState(null);
+
+    const [habitacionSeleccionada, setHabitacionSeleccionada] = useState(null);
+
+    const [recepcionistaSeleccionado, setRecepcionistaSeleccionado] = useState(null);
+
+    const [formaPago, setFormaPago] = useState("efectivo");
+
+    const [horaEntrada, setHoraEntrada] = useState("");
+
+    const [horaSalida, setHoraSalida] = useState("");
+
+    const [monto, setMonto] = useState(0);
+
     const [textoBusqueda, setTextoBusqueda] = useState("");
 
-    const [reservasFiltradas, setReservasFiltradas] =
-        useState([]);
+    const [reservasFiltradas, setReservasFiltradas] = useState([]);
 
-    // 📄 Paginación
-    const [registrosPorPagina, establecerRegistrosPorPagina] =
-        useState(5);
+    const [registrosPorPagina, establecerRegistrosPorPagina] = useState(8);
 
-    const [paginaActual, establecerPaginaActual] =
-        useState(1);
+    const [paginaActual, establecerPaginaActual] = useState(1);
 
-    // 📌 Slice paginado
     const reservasPaginadas = reservasFiltradas.slice(
         (paginaActual - 1) * registrosPorPagina,
         paginaActual * registrosPorPagina
     );
 
-    // ✏️ Estado editar
-    const [reservaEditar, setReservaEditar] = useState({
-        id_reserva: "",
-        id_huesped: "",
-        id_habitacion: "",
-        id_empleado: "",
-        id_tiempo: "",
-        monto_total: "",
-        forma_pago: "",
-        hora_entrada: "",
-        hora_salida: "",
-    });
+    // ===============================
+    // CARGAR DATOS AUXILIARES
+    // ===============================
 
-    // ➕ Nueva reserva
-    const [nuevaReserva, setNuevaReserva] = useState({
-        id_huesped: "",
-        id_habitacion: "",
-        id_empleado: "",
-        id_tiempo: "",
-        monto_total: "",
-        forma_pago: "",
-        hora_entrada: "",
-        hora_salida: "",
-    });
+    const cargarDatosAuxiliares = async () => {
 
-    // 🚀 Cargar reservas
+        try {
+
+            const [h, hab, r] = await Promise.all([
+
+                supabase.from("huesped").select("*"),
+
+                supabase.from("habitacion").select("*"),
+
+                supabase.from("recepcion").select("*")
+
+            ]);
+
+            setHuespedes(h.data || []);
+
+            setHabitaciones(hab.data || []);
+
+            setRecepcionistas(r.data || []);
+
+        } catch (err) {
+
+            console.error(
+                "Error cargando auxiliares:",
+                err
+            );
+
+        }
+
+    };
+
+    // ===============================
+    // CARGAR RESERVAS
+    // ===============================
+
+    const cargarReservas = async () => {
+
+        try {
+
+            setCargando(true);
+
+            const { data, error } = await supabase
+                .from("reserva")
+                .select(`
+    id_reserva,
+    hora_entrada,
+    hora_salida,
+    forma_pago,
+    monto,
+    huesped (
+      primer_nombre,
+      primer_apellido
+    ),
+    habitacion (
+      numero_habitacion,
+      tipo_habitacion
+    ),
+    recepcion (
+      nombre,
+      apellido
+    )
+  `)
+                .order("hora_entrada", { ascending: false });
+
+            if (error) {
+
+                console.error(
+                    "Error al cargar reservas:",
+                    error
+                );
+
+                setToast({
+                    mostrar: true,
+                    mensaje: "Error al cargar reservas",
+                    tipo: "error"
+                });
+
+                return;
+
+            }
+
+            setReservas(data || []);
+
+        } catch (err) {
+
+            console.error(err);
+
+            setToast({
+                mostrar: true,
+                mensaje:
+                    "Error inesperado al cargar reservas",
+                tipo: "error"
+            });
+
+        } finally {
+
+            setCargando(false);
+
+        }
+
+    };
+
     useEffect(() => {
+
         cargarReservas();
+
+        cargarDatosAuxiliares();
+
     }, []);
 
-    // 🔎 Filtrado
+    // ===============================
+    // PRECARGAR EDICIÓN
+    // ===============================
+
+    useEffect(() => {
+
+        if (reservaAEditar) {
+
+            const huesped = huespedes.find(
+                h =>
+                    h.id_huesped ===
+                    reservaAEditar.id_huesped
+            );
+
+            const habitacion = habitaciones.find(
+                h =>
+                    h.id_habitacion ===
+                    reservaAEditar.id_habitacion
+            );
+
+            const recepcionista =
+                recepcionistas.find(
+                    r =>
+                        r.id_recepcionista ===
+                        reservaAEditar.id_recepcionista
+                );
+
+            setHuespedSeleccionado(
+                huesped || null
+            );
+
+            setHabitacionSeleccionada(
+                habitacion || null
+            );
+
+            setRecepcionistaSeleccionado(
+                recepcionista || null
+            );
+
+            setFormaPago(
+                reservaAEditar.forma_pago || "efectivo"
+            );
+
+            setHoraEntrada(
+                reservaAEditar.hora_entrada || ""
+            );
+
+            setHoraSalida(
+                reservaAEditar.hora_salida || ""
+            );
+
+            setMonto(
+                reservaAEditar.monto || 0
+            );
+
+        }
+
+    }, [
+        reservaAEditar,
+        huespedes,
+        habitaciones,
+        recepcionistas
+    ]);
+
+    // ===============================
+    // BÚSQUEDA
+    // ===============================
+
     useEffect(() => {
 
         if (!textoBusqueda.trim()) {
@@ -103,266 +245,269 @@ const Reserva = () => {
         } else {
 
             const textoLower =
-                textoBusqueda.toLowerCase().trim();
+                textoBusqueda.toLowerCase();
 
-            const filtradas = reservas.filter((r) =>
+            const filtradas = reservas.filter(r =>
 
-                r.forma_pago?.toLowerCase().includes(textoLower)
-                ||
-                r.monto_total?.toString().includes(textoLower)
-                ||
-                r.id_reserva?.toString().includes(textoLower)
+                `${r.huesped?.primer_nombre || ""}
+         ${r.huesped?.primer_apellido || ""}`
+                    .toLowerCase()
+                    .includes(textoLower)
+
             );
 
             setReservasFiltradas(filtradas);
+
         }
 
     }, [textoBusqueda, reservas]);
 
-    // 🔍 Input búsqueda
-    const manejoBusqueda = (e) => {
+    // ===============================
+    // NUEVA RESERVA
+    // ===============================
+
+    const abrirNuevaReserva = () => {
+
+        resetFormulario();
+
+        setMostrarFormulario(true);
+
+    };
+
+    // ===============================
+    // EDITAR
+    // ===============================
+
+    const abrirEdicion = (reserva) => {
+
+        setReservaAEditar(reserva);
+
+        setMostrarFormulario(true);
+
+    };
+
+    // ===============================
+    // RESET
+    // ===============================
+
+    const resetFormulario = () => {
+
+        setHuespedSeleccionado(null);
+
+        setHabitacionSeleccionada(null);
+
+        setRecepcionistaSeleccionado(null);
+
+        setFormaPago("efectivo");
+
+        setHoraEntrada("");
+
+        setHoraSalida("");
+
+        setMonto(0);
+
+        setReservaAEditar(null);
+
+    };
+
+    // ===============================
+    // GUARDAR
+    // ===============================
+
+    const guardarReserva = async () => {
+
+        if (
+            !huespedSeleccionado ||
+            !habitacionSeleccionada ||
+            !recepcionistaSeleccionado
+        ) {
+
+            setToast({
+                mostrar: true,
+                mensaje:
+                    "Faltan datos obligatorios",
+                tipo: "advertencia"
+            });
+
+            return;
+
+        }
+
+        try {
+
+            if (reservaAEditar) {
+
+                // =====================
+                // ACTUALIZAR
+                // =====================
+
+                await supabase
+
+                    .from("reserva")
+
+                    .update({
+
+                        id_huesped:
+                            huespedSeleccionado.id_huesped,
+
+                        id_habitacion:
+                            habitacionSeleccionada.id_habitacion,
+
+                        id_recepcionista:
+                            recepcionistaSeleccionado.id_recepcionista,
+
+                        hora_entrada:
+                            horaEntrada,
+
+                        hora_salida:
+                            horaSalida,
+
+                        forma_pago:
+                            formaPago,
+
+                        monto:
+                            monto,
+
+                        fecha_pago:
+                            new Date()
+                                .toISOString()
+                                .split("T")[0]
+
+                    })
+
+                    .eq(
+                        "id_reserva",
+                        reservaAEditar.id_reserva
+                    );
+
+                setToast({
+                    mostrar: true,
+                    mensaje:
+                        "Reserva actualizada exitosamente",
+                    tipo: "exito"
+                });
+
+            } else {
+
+                // =====================
+                // NUEVA RESERVA
+                // =====================
+
+                await supabase
+
+                    .from("reserva")
+
+                    .insert([{
+
+                        id_huesped:
+                            huespedSeleccionado.id_huesped,
+
+                        id_habitacion:
+                            habitacionSeleccionada.id_habitacion,
+
+                        id_recepcionista:
+                            recepcionistaSeleccionado.id_recepcionista,
+
+                        hora_entrada:
+                            horaEntrada,
+
+                        hora_salida:
+                            horaSalida,
+
+                        forma_pago:
+                            formaPago,
+
+                        monto:
+                            monto,
+
+                        fecha_pago:
+                            new Date()
+                                .toISOString()
+                                .split("T")[0]
+
+                    }]);
+
+                setToast({
+                    mostrar: true,
+                    mensaje:
+                        "Reserva registrada exitosamente",
+                    tipo: "exito"
+                });
+
+            }
+
+            resetFormulario();
+
+            setMostrarFormulario(false);
+
+            await cargarReservas();
+
+        } catch (err) {
+
+            console.error(err);
+
+            setToast({
+                mostrar: true,
+                mensaje:
+                    "Error al guardar reserva",
+                tipo: "error"
+            });
+
+        }
+
+    };
+
+    // ===============================
+    // BÚSQUEDA INPUT
+    // ===============================
+
+    const manejarBusqueda = (e) => {
+
         setTextoBusqueda(e.target.value);
+
     };
 
-    // 📥 Cargar desde Supabase
-    const cargarReservas = async () => {
-
-        try {
-
-            setCargando(true);
-
-            const { data, error } = await supabase
-                .from("reserva")
-                .select("*")
-                .order("id_reserva", {
-                    ascending: true
-                });
-
-            if (error) {
-
-                console.error(error.message);
-
-                setToast({
-                    mostrar: true,
-                    mensaje: "Error al cargar reservas",
-                    tipo: "error",
-                });
-
-                return;
-            }
-
-            setReservas(data || []);
-
-        } catch (err) {
-
-            console.error(err.message);
-
-        } finally {
-
-            setCargando(false);
-        }
-    };
-
-    // ➕ Agregar reserva
-    const agregarReserva = async () => {
-
-        try {
-
-            const { error } = await supabase
-                .from("reserva")
-                .insert([nuevaReserva]);
-
-            if (error) {
-
-                console.error(error.message);
-
-                setToast({
-                    mostrar: true,
-                    mensaje: "Error al registrar reserva",
-                    tipo: "error",
-                });
-
-                return;
-            }
-
-            await cargarReservas();
-
-            setToast({
-                mostrar: true,
-                mensaje: "Reserva registrada correctamente",
-                tipo: "exito",
-            });
-
-            setMostrarModal(false);
-
-        } catch (err) {
-
-            console.error(err.message);
-        }
-    };
-
-    // ✏️ Abrir edición
-    const abrirModalEdicion = (reserva) => {
-
-        setReservaEditar({
-            id_reserva: reserva.id_reserva,
-            id_huesped: reserva.id_huesped,
-            id_habitacion: reserva.id_habitacion,
-            id_empleado: reserva.id_empleado,
-            id_tiempo: reserva.id_tiempo,
-            monto_total: reserva.monto_total,
-            forma_pago: reserva.forma_pago,
-            hora_entrada: reserva.hora_entrada,
-            hora_salida: reserva.hora_salida,
-        });
-
-        setMostrarModalEdicion(true);
-    };
-
-    // ✏️ Actualizar reserva
-    const actualizarReserva = async () => {
-
-        try {
-
-            const { error } = await supabase
-                .from("reserva")
-                .update({
-                    id_huesped: reservaEditar.id_huesped,
-                    id_habitacion: reservaEditar.id_habitacion,
-                    id_empleado: reservaEditar.id_empleado,
-                    id_tiempo: reservaEditar.id_tiempo,
-                    monto_total: reservaEditar.monto_total,
-                    forma_pago: reservaEditar.forma_pago,
-                    hora_entrada: reservaEditar.hora_entrada,
-                    hora_salida: reservaEditar.hora_salida,
-                })
-
-                .eq(
-                    "id_reserva",
-                    reservaEditar.id_reserva
-                );
-
-            if (error) {
-
-                console.error(error.message);
-
-                setToast({
-                    mostrar: true,
-                    mensaje: "Error al actualizar reserva",
-                    tipo: "error",
-                });
-
-                return;
-            }
-
-            await cargarReservas();
-
-            setToast({
-                mostrar: true,
-                mensaje: "Reserva actualizada correctamente",
-                tipo: "exito",
-            });
-
-            setMostrarModalEdicion(false);
-
-        } catch (err) {
-
-            console.error(err.message);
-        }
-    };
-
-    // 🗑️ Abrir modal eliminar
-    const abrirModalEliminacion = (reserva) => {
-
-        setReservaAEliminar(reserva);
-
-        setMostrarModalEliminacion(true);
-    };
-
-    // 🗑️ Eliminar reserva
-    const eliminarReserva = async () => {
-
-        try {
-
-            const { error } = await supabase
-                .from("reserva")
-                .delete()
-                .eq(
-                    "id_reserva",
-                    reservaAEliminar.id_reserva
-                );
-
-            if (error) {
-
-                console.error(error.message);
-
-                return;
-            }
-
-            await cargarReservas();
-
-            setToast({
-                mostrar: true,
-                mensaje: "Reserva eliminada",
-                tipo: "exito",
-            });
-
-            setMostrarModalEliminacion(false);
-
-        } catch (err) {
-
-            console.error(err.message);
-        }
-    };
-
-    // ✍️ Inputs registro
-    const manejoCambioInput = (e) => {
-
-        const { name, value } = e.target;
-
-        setNuevaReserva((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    // ✍️ Inputs edición
-    const manejoCambioInputEdicion = (e) => {
-
-        const { name, value } = e.target;
-
-        setReservaEditar((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
+    // ===============================
+    // RENDER
+    // ===============================
 
     return (
 
         <Container className="mt-3">
 
-            {/* ENCABEZADO */}
             <Row className="align-items-center mb-3">
 
-                <Col xs={9}>
-                    <h3>
+                <Col xs={8} lg={8}>
+
+                    <h3 className="mb-0">
+
                         <i className="bi bi-calendar-check me-2"></i>
+
                         Reservas
+
                     </h3>
+
                 </Col>
 
-                <Col xs={3} className="text-end">
+                <Col
+                    xs={4}
+                    lg={4}
+                    className="text-end"
+                >
 
                     <Button
-                        onClick={() =>
-                            setMostrarModal(true)
-                        }
+                        onClick={abrirNuevaReserva}
+                        size="md"
                     >
+
                         <i className="bi bi-plus-lg"></i>
 
                         <span className="d-none d-sm-inline ms-2">
+
                             Nueva Reserva
+
                         </span>
+
                     </Button>
 
                 </Col>
@@ -372,69 +517,82 @@ const Reserva = () => {
             <hr />
 
             {/* BUSCADOR */}
+
             <Row className="mb-4">
 
                 <Col md={6} lg={5}>
 
-                    <CuadrosBusquedas
+                    <CuadroBusquedas
                         textoBusqueda={textoBusqueda}
-                        manejarCambioBusqueda={manejoBusqueda}
+                        manejarCambioBusqueda={manejarBusqueda}
+                        placeholder="Buscar por huésped..."
                     />
 
                 </Col>
 
             </Row>
 
-            {/* LOADER */}
-            {cargando && (
+            {/* TABLA */}
+
+            {cargando ? (
 
                 <Row className="text-center my-5">
 
-                    <Col>
+                    <Spinner
+                        animation="border"
+                        variant="success"
+                        size="lg"
+                    />
 
-                        <Spinner
-                            animation="border"
-                            variant="primary"
-                            size="lg"
-                        />
+                    <p className="mt-3 text-muted">
 
-                        <p className="mt-3 text-muted">
-                            Cargando reservas...
-                        </p>
+                        Cargando reservas...
 
-                    </Col>
+                    </p>
 
                 </Row>
-            )}
 
-            {/* TARJETAS */}
-            {!cargando && reservas.length > 0 && (
+            ) : (
 
                 <Row>
 
-                    <Col xs={12}>
+                    <Col
+                        xs={12}
+                        className="d-lg-none"
+                    >
 
                         <TarjetaReserva
                             reservas={reservasPaginadas}
-                            abrirModalEdicion={
-                                abrirModalEdicion
-                            }
-                            abrirModalEliminacion={
-                                abrirModalEliminacion
-                            }
+                            abrirEdicion={abrirEdicion}
+                        />
+
+                    </Col>
+
+                    <Col
+                        lg={12}
+                        className="d-none d-lg-block"
+                    >
+
+                        <TablaReserva
+                            reservas={reservasPaginadas}
+                            abrirEdicion={abrirEdicion}
                         />
 
                     </Col>
 
                 </Row>
+
             )}
 
             {/* PAGINACIÓN */}
+
             {reservasFiltradas.length > 0 && (
 
                 <Paginacion
                     registrosPorPagina={registrosPorPagina}
-                    totalRegistros={reservasFiltradas.length}
+                    totalRegistros={
+                        reservasFiltradas.length
+                    }
                     paginaActual={paginaActual}
                     establecerPaginaActual={
                         establecerPaginaActual
@@ -443,45 +601,47 @@ const Reserva = () => {
                         establecerRegistrosPorPagina
                     }
                 />
+
             )}
 
-            {/* MODAL REGISTRO */}
-            <ModalRegistroReserva
-                mostrarModal={mostrarModal}
-                setMostrarModal={setMostrarModal}
-                nuevaReserva={nuevaReserva}
-                manejoCambioInput={manejoCambioInput}
-                agregarReserva={agregarReserva}
-            />
+            {/* FORMULARIO */}
 
-            {/* MODAL EDICIÓN */}
-            <ModalEdicionReserva
-                mostrarModalEdicion={
-                    mostrarModalEdicion
+            <FormularioReserva
+                mostrar={mostrarFormulario}
+                setMostrar={setMostrarFormulario}
+                huespedes={huespedes}
+                habitaciones={habitaciones}
+                recepcionistas={recepcionistas}
+                huespedSeleccionado={huespedSeleccionado}
+                setHuespedSeleccionado={
+                    setHuespedSeleccionado
                 }
-                setMostrarModalEdicion={
-                    setMostrarModalEdicion
+                habitacionSeleccionada={
+                    habitacionSeleccionada
                 }
-                reservaEditar={reservaEditar}
-                manejoCambioInputEdicion={
-                    manejoCambioInputEdicion
+                setHabitacionSeleccionada={
+                    setHabitacionSeleccionada
                 }
-                actualizarReserva={actualizarReserva}
-            />
-
-            {/* MODAL ELIMINAR */}
-            <ModalEliminacionReserva
-                mostrarModalEliminacion={
-                    mostrarModalEliminacion
+                recepcionistaSeleccionado={
+                    recepcionistaSeleccionado
                 }
-                setMostrarModalEliminacion={
-                    setMostrarModalEliminacion
+                setRecepcionistaSeleccionado={
+                    setRecepcionistaSeleccionado
                 }
-                eliminarReserva={eliminarReserva}
-                reserva={reservaAEliminar}
+                formaPago={formaPago}
+                setFormaPago={setFormaPago}
+                horaEntrada={horaEntrada}
+                setHoraEntrada={setHoraEntrada}
+                horaSalida={horaSalida}
+                setHoraSalida={setHoraSalida}
+                monto={monto}
+                setMonto={setMonto}
+                guardarReserva={guardarReserva}
+                reservaAEditar={reservaAEditar}
             />
 
             {/* TOAST */}
+
             <NotificacionOperacion
                 mostrar={toast.mostrar}
                 mensaje={toast.mensaje}
@@ -489,12 +649,13 @@ const Reserva = () => {
                 onCerrar={() =>
                     setToast({
                         ...toast,
-                        mostrar: false,
+                        mostrar: false
                     })
                 }
             />
 
         </Container>
+
     );
 };
 

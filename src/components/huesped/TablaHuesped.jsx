@@ -1,160 +1,96 @@
-import React, { useState } from "react";
-import { Table, Spinner, Button, Card, Form } from "react-bootstrap";
-import { useMediaQuery } from "react-responsive";
+import React, { useState, useEffect } from "react";
+import { Table, Spinner, Button, Form } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-const TablaHuespedes = ({
-    huespedes = [],
-    cargando = false,
+const TablaHuesped = ({
+    huespedes,
     abrirModalEdicion,
     abrirModalEliminacion
 }) => {
 
-    const [tipoGeneral, setTipoGeneral] = useState("cedula");
+    const [loading, setLoading] = useState(true);
 
-    const isMobile = useMediaQuery({
-        maxWidth: 767
-    });
+    // Selector documento
+    const [tipoDocumento, setTipoDocumento] = useState("cedula");
 
-    // FORMATEAR CÉDULA
-    const formatearCedula = (cedula = "") => {
+    useEffect(() => {
 
-        const numeros =
-            cedula.replace(/\D/g, "").slice(0, 13);
+        if (huespedes && huespedes.length > 0) {
+            setLoading(false);
+        } else {
+            setLoading(true);
+        }
 
-        if (numeros.length <= 3)
-            return numeros;
+    }, [huespedes]);
 
-        if (numeros.length <= 9)
-            return `${numeros.slice(0, 3)}-${numeros.slice(3)}`;
+    // Nombre completo
+    const nombreCompleto = (huesped) => {
 
-        return `${numeros.slice(0, 3)}-${numeros.slice(3, 9)}-${numeros.slice(9)}`;
+        return `
+            ${huesped.primer_nombre || ""}
+            ${huesped.segundo_nombre || ""}
+            ${huesped.primer_apellido || ""}
+            ${huesped.segundo_apellido || ""}
+        `.trim();
+
     };
 
-    // CARGANDO
-    if (cargando) {
+    return (
+        <>
+            {loading ? (
 
-        return (
+                <div className="text-center">
 
-            <div className="text-center my-5">
+                    <h4>
+                        Cargando huéspedes...
+                    </h4>
 
-                <Spinner
-                    animation="border"
-                    variant="success"
-                />
+                    <Spinner
+                        animation="border"
+                        variant="success"
+                        role="status"
+                    />
 
-                <p className="mt-2 text-muted">
-                    Cargando huéspedes...
-                </p>
+                </div>
 
-            </div>
-        );
-    }
+            ) : (
 
-    // SIN DATOS
-    if (huespedes.length === 0) {
+                <Table
+                    striped
+                    borderless
+                    hover
+                    responsive
+                    size="sm"
+                    className="tabla-huesped"
+                >
 
-        return (
-            <p className="text-center text-muted">
-                No hay huéspedes registrados.
-            </p>
-        );
-    }
+                    <thead>
 
-    // =========================
-    // VISTA MÓVIL
-    // =========================
-    if (isMobile) {
+                        <tr>
 
-        return (
+                            <th>ID</th>
 
-            <div>
+                            <th>
+                                Nombre Completo
+                            </th>
 
-                <div className="d-flex flex-column gap-3">
+                            <th>
 
-                    {huespedes.map((huesped) => (
+                                <div className="d-flex align-items-center gap-2">
 
-                        <Card
-                            key={huesped.id_huesped}
-                            className="shadow-sm border-0"
-                            style={{
-                                borderRadius: "15px",
-                                background: "rgba(255,255,255,0.97)",
-                                border: "2px solid #471987"
-                            }}
-                        >
-
-                            <Card.Body className="p-3">
-
-                                <div className="d-flex justify-content-between align-items-start mb-2">
-
-                                    <div>
-
-                                        <div className="fw-bold text-success fs-5">
-
-                                            #{huesped.id_huesped}
-
-                                        </div>
-
-                                        <div className="fw-semibold">
-
-                                            {huesped.primer_nombre}{" "}
-                                            {huesped.segundo_nombre}{" "}
-                                            {huesped.primer_apellido}{" "}
-                                            {huesped.segundo_apellido}
-
-                                        </div>
-
-                                    </div>
-
-                                    <div className="d-grid gap-1">
-
-                                        <Button
-                                            size="sm"
-                                            variant="info"
-                                            onClick={() =>
-                                                abrirModalEdicion(huesped)
-                                            }
-                                        >
-                                            Editar
-                                        </Button>
-
-                                        <Button
-                                            size="sm"
-                                            variant="danger"
-                                            onClick={() =>
-                                                abrirModalEliminacion(huesped)
-                                            }
-                                        >
-                                            Eliminar
-                                        </Button>
-
-                                    </div>
-
-                                </div>
-
-                                {/* SELECT DENTRO DE LA TARJETA */}
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-
-                                    <span
-                                        style={{
-                                            color: "#0d6efd",
-                                            fontWeight: "bold"
-                                        }}
-                                    >
-                                        Tipo Documento
+                                    <span>
+                                        Documento
                                     </span>
 
                                     <Form.Select
                                         size="sm"
                                         style={{
-                                            width: "120px"
+                                            width: "120px",
+                                            fontSize: "12px"
                                         }}
-                                        value={tipoGeneral}
+                                        value={tipoDocumento}
                                         onChange={(e) =>
-                                            setTipoGeneral(
-                                                e.target.value
-                                            )
+                                            setTipoDocumento(e.target.value)
                                         }
                                     >
 
@@ -170,237 +106,91 @@ const TablaHuespedes = ({
 
                                 </div>
 
-                                <hr className="my-2 border-success" />
+                            </th>
 
-                                <div className="small">
+                            <th className="d-none d-md-table-cell">
+                                Lugar Origen
+                            </th>
 
-                                    <div className="d-flex justify-content-between mb-1">
-
-                                        <span
-                                            style={{
-                                                color: "#0d6efd",
-                                                fontWeight: "bold"
-                                            }}
-                                        >
-                                            Documento:
-                                        </span>
-                                        <span>
-
-                                            {tipoGeneral === "cedula"
-
-                                                ? (
-                                                    huesped.cedula_pasaporte
-                                                )
-                                                    ? formatearCedula(
-                                                        huesped.cedula_pasaporte
-                                                    )
-                                                    : ""
-
-                                                : (
-                                                    huesped.pasaporte || ""
-                                                )
-                                            }
-
-                                        </span>
-
-                                    </div>
-
-                                    <div className="d-flex justify-content-between">
-
-                                        <span
-                                            style={{
-                                                color: "#0d6efd",
-                                                fontWeight: "bold"
-                                            }}
-                                        >
-                                            Lugar origen:
-                                        </span>
-
-                                        <span>
-                                            {huesped.lugar_origen || "-"}
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                            </Card.Body>
-
-                        </Card>
-
-                    ))}
-
-                </div>
-
-            </div>
-        );
-    }
-
-    // =========================
-    // VISTA ESCRITORIO
-    // =========================
-    return (
-
-        <div style={{
-            maxHeight: "550px",
-            overflowY: "auto"
-        }}>
-
-            <Table
-                striped
-                bordered
-                hover
-                responsive
-                className="shadow-sm"
-            >
-
-                <thead
-                    className="table-success"
-                    style={{
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10
-                    }}
-                >
-
-                    <tr>
-
-                        <th>ID</th>
-
-                        <th>
-                            Nombre Completo
-                        </th>
-
-                        <th>
-
-                            <div className="d-flex align-items-center gap-2">
-
-                                <span>
-                                    Documento
-                                </span>
-
-                                <Form.Select
-                                    size="sm"
-                                    style={{
-                                        width: "120px",
-                                        fontSize: "12px",
-                                        padding: "2px 6px"
-                                    }}
-                                    value={tipoGeneral}
-                                    onChange={(e) =>
-                                        setTipoGeneral(
-                                            e.target.value
-                                        )
-                                    }
-                                >
-
-                                    <option value="cedula">
-                                        Cédula
-                                    </option>
-
-                                    <option value="pasaporte">
-                                        Pasaporte
-                                    </option>
-
-                                </Form.Select>
-
-                            </div>
-
-                        </th>
-
-                        <th>
-                            Lugar Origen
-                        </th>
-
-                        <th className="text-center">
-                            Acciones
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    {huespedes.map((huesped) => (
-
-                        <tr key={huesped.id_huesped}>
-
-                            <td>
-                                {huesped.id_huesped}
-                            </td>
-
-                            <td>
-
-                                {huesped.primer_nombre}{" "}
-                                {huesped.segundo_nombre}{" "}
-                                {huesped.primer_apellido}{" "}
-                                {huesped.segundo_apellido}
-
-                            </td>
-
-                            <td>
-
-                                {tipoGeneral === "cedula"
-
-                                    ? (
-                                        huesped.cedula_pasaporte
-                                    )
-                                        ? formatearCedula(
-                                            huesped.cedula_pasaporte
-                                        )
-                                        : ""
-
-                                    : (
-                                        huesped.pasaporte || ""
-                                    )
-                                }
-
-                            </td>
-
-                            <td>
-                                {huesped.lugar_origen}
-                            </td>
-
-                            <td className="text-center">
-
-                                <Button
-                                    variant="info"
-                                    size="sm"
-                                    className="m-1"
-                                    onClick={() =>
-                                        abrirModalEdicion(huesped)
-                                    }
-                                >
-
-                                    ✏️ Editar
-
-                                </Button>
-
-                                <Button
-                                    variant="danger"
-                                    size="sm"
-                                    onClick={() =>
-                                        abrirModalEliminacion(huesped)
-                                    }
-                                >
-
-                                    🗑️ Eliminar
-
-                                </Button>
-
-                            </td>
+                            <th className="text-center">
+                                Acciones
+                            </th>
 
                         </tr>
 
-                    ))}
+                    </thead>
 
-                </tbody>
+                    <tbody>
 
-            </Table>
+                        {huespedes.map((huesped) => (
 
-        </div>
+                            <tr key={huesped.id_huesped}>
+
+                                <td>
+                                    {huesped.id_huesped}
+                                </td>
+
+                                <td className="fw-semibold">
+
+                                    {nombreCompleto(huesped)}
+
+                                </td>
+
+                                <td>
+
+                                    {tipoDocumento === "cedula"
+                                        ? huesped.cedula_pasaporte || "—"
+                                        : huesped.pasaporte || "—"
+                                    }
+
+                                </td>
+
+                                <td className="d-none d-md-table-cell">
+
+                                    {huesped.lugar_origen || "—"}
+
+                                </td>
+
+                                <td className="text-center">
+
+                                    <Button
+                                        variant="outline-warning"
+                                        size="sm"
+                                        className="m-1"
+                                        onClick={() =>
+                                            abrirModalEdicion(huesped)
+                                        }
+                                    >
+
+                                        <i className="bi bi-pencil"></i>
+
+                                    </Button>
+
+                                    <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() =>
+                                            abrirModalEliminacion(huesped)
+                                        }
+                                    >
+
+                                        <i className="bi bi-trash"></i>
+
+                                    </Button>
+
+                                </td>
+
+                            </tr>
+
+                        ))}
+
+                    </tbody>
+
+                </Table>
+
+            )}
+        </>
     );
 };
 
-export default TablaHuespedes;
+export default TablaHuesped;
