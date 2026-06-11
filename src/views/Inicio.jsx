@@ -18,7 +18,7 @@ const Inicio = () => {
   const [cargando, setCargando] = useState(true);
 
   const graficoHoraRef = useRef(null);
-  const graficoCategoriaRef = useRef(null);
+  const graficoTiposHabitacionRef = useRef(null);
 
   const hoy = new Date();
   const fechaActual = hoy.toLocaleDateString("en-CA", {
@@ -152,7 +152,7 @@ const Inicio = () => {
       // CAPTURAR GRAFICO
 
       const canvas = await html2canvas(
-        graficoCategoriaRef.current
+        graficoTiposHabitacionRef.current
       );
 
       const imagen = canvas.toDataURL("image/png");
@@ -313,12 +313,12 @@ const Inicio = () => {
       pdf.addPage();
 
       // =========================
-      // GRAFICO CATEGORIA
+      // GRAFICO Hbaitacion
       // =========================
 
       const canvasCategoria =
         await html2canvas(
-          graficoCategoriaRef.current
+          graficoTiposHabitacionRef.current
         );
 
       const imgCategoria =
@@ -898,7 +898,7 @@ const Inicio = () => {
         <Col lg={4}>
           <Card className="shadow border-0">
 
-            <Card.Body ref={graficoCategoriaRef}>
+            <Card.Body ref={graficoTiposHabitacionRef}>
 
               <h5 className="mb-3">
                 Tipos de Habitación
