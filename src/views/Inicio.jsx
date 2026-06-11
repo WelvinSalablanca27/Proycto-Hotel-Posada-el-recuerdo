@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Row, Col, Card, Spinner, Form, Button } from "react-bootstrap";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { Container, Row, Col, Card, Spinner, Form, Button } from "react-bootstrap";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
+} from "recharts";
 import { supabase } from "../database/supabaseconfig";
-import * as XLSX from "xlsx";
+import * as XLSX from 'xlsx';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import html2canvas from "html2canvas";
@@ -16,84 +18,55 @@ const Inicio = () => {
   const [cargando, setCargando] = useState(true);
 
   const graficoHoraRef = useRef(null);
+  const graficoCategoriaRef = useRef(null);
 
-  const graficoTipoHabitacionRef = useRef(null);
+  const hoy = new Date();
+  const fechaActual = hoy.toLocaleDateString("en-CA", {
+    timeZone: "America/Managua"
+  });
+
+  const fechaInicioPredeterminada = new Date(hoy);
+  fechaInicioPredeterminada.setDate(fechaInicioPredeterminada.getDate() - 30);
 
   const [fechaDesde, setFechaDesde] = useState(
-    new Date().toLocaleDateString("en-CA", { timeZone: "America/Managua" })
+    fechaInicioPredeterminada.toLocaleDateString("en-CA", {
+      timeZone: "America/Managua"
+    })
   );
 
-  const [fechaHasta, setFechaHasta] = useState(
-    new Date().toLocaleDateString("en-CA", { timeZone: "America/Managua" })
-  );
+  const [fechaHasta, setFechaHasta] = useState(fechaActual);
   const generarPdfReservasHora = async () => {
-
     try {
 
       const pdf = new jsPDF("p", "mm", "a4");
 
-      // TÍTULO Y FECHA
-
+      //Título y fecha
       pdf.setFontSize(18);
-
       pdf.setTextColor("#330775");
-
       pdf.setFont("helvetica", "bold");
-
-      pdf.text(
-        "Reporte de Reservas por Hora",
-        14,
-        15
-      );
+      pdf.text("Reporte de Reservas por Hora", 14, 15);
 
       pdf.setFont("helvetica", "normal");
-
       pdf.setTextColor("#000000");
-
       pdf.setFontSize(10);
 
-      pdf.text(
-        `Periodo: ${fechaDesde} - ${fechaHasta}`,
-        14,
-        22
-      );
+      pdf.text(`Periodo: ${fechaDesde} - ${fechaHasta}`, 14, 22);
 
-      // IMAGEN DEL GRÁFICO
+      // Imagen del gráfico
+      const canvas = await html2canvas(graficoHoraRef.current);
+      const imagen = canvas.toDataURL("image/png");
 
-      const canvas = await html2canvas(
-        graficoHoraRef.current
-      );
+      pdf.addImage(imagen, "PNG", 10, 30, 190, 80);
 
-      const imagen =
-        canvas.toDataURL("image/png");
-
-      pdf.addImage(
-        imagen,
-        "PNG",
-        10,
-        30,
-        190,
-        80
-      );
-
-      // RESUMEN GENERAL
-
+      // Resumen general
       pdf.setFontSize(14);
-
       pdf.setTextColor("#330775");
-
       pdf.setFont("helvetica", "bold");
 
-      pdf.text(
-        "Resumen General",
-        14,
-        115
-      );
+      pdf.text("Resumen General", 14, 115);
 
       pdf.setFont("helvetica", "normal");
-
       pdf.setTextColor("#000000");
-
       pdf.setFontSize(10);
 
       pdf.text(
@@ -126,13 +99,11 @@ const Inicio = () => {
         153
       );
 
-      // TABLA
-
-      const filas =
-        estadisticas.reservasPorHora.map(item => [
-          item.hora,
-          `C$ ${item.total}`
-        ]);
+      // Tabla de reservas por hora
+      const filas = estadisticas.reservasPorHora.map(item => [
+        item.hora,
+        `C$ ${item.total}`
+      ]);
 
       autoTable(pdf, {
         startY: 160,
@@ -140,24 +111,18 @@ const Inicio = () => {
         body: filas
       });
 
-      // DESCARGAR PDF
-
-      const fechaActual =
-        new Date().toLocaleDateString(
-          "en-CA",
-          {
-            timeZone: "America/Managua"
-          }
-        );
+      // Descargar PDF
+      const fechaActual = new Date().toLocaleDateString(
+        "en-CA",
+        { timeZone: "America/Managua" }
+      );
 
       pdf.save(
         `ReservasHora_${fechaDesde}_${fechaHasta}_Generado_${fechaActual}.pdf`
       );
 
     } catch (error) {
-
       console.error(error);
-
       alert("Error generando PDF");
     }
   };
@@ -168,19 +133,11 @@ const Inicio = () => {
 
       const pdf = new jsPDF("p", "mm", "a4");
 
-      // =========================
-      // TITULO
-      // =========================
-
       pdf.setFontSize(18);
       pdf.setTextColor("#330775");
       pdf.setFont("helvetica", "bold");
 
-      pdf.text(
-        "Reporte de Tipos de Habitación",
-        14,
-        15
-      );
+      pdf.text("Reporte de Tipos de Habitación", 14, 15);
 
       pdf.setFontSize(10);
       pdf.setTextColor("#000000");
@@ -192,16 +149,13 @@ const Inicio = () => {
         22
       );
 
-      // =========================
       // CAPTURAR GRAFICO
-      // =========================
 
       const canvas = await html2canvas(
-        graficoTipoHabitacionRef.current
+        graficoCategoriaRef.current
       );
 
-      const imagen =
-        canvas.toDataURL("image/png");
+      const imagen = canvas.toDataURL("image/png");
 
       pdf.addImage(
         imagen,
@@ -212,27 +166,21 @@ const Inicio = () => {
         90
       );
 
-      // =========================
       // TABLA
-      // =========================
 
       const filas =
         estadisticas.reservasPorTipoHabitacion.map(
           (item) => [
             item.name,
-            item.value
+            `C$ ${item.value.toFixed(2)}`
           ]
         );
 
       autoTable(pdf, {
         startY: 130,
-        head: [["Tipo Habitación", "Cantidad"]],
+        head: [["Tipo Habitación", "Monto"]],
         body: filas
       });
-
-      // =========================
-      // FECHA
-      // =========================
 
       const fechaActual =
         new Date().toLocaleDateString(
@@ -241,10 +189,6 @@ const Inicio = () => {
             timeZone: "America/Managua"
           }
         );
-
-      // =========================
-      // GUARDAR
-      // =========================
 
       pdf.save(
         `TiposHabitacion_${fechaActual}.pdf`
@@ -259,102 +203,200 @@ const Inicio = () => {
   };
 
   const generarPdfGeneral = async () => {
+
     try {
+
       const pdf = new jsPDF("p", "mm", "a4");
 
-      // ======================
-      // TÍTULO
-      // ======================
-      pdf.setFontSize(18);
+      // =========================
+      // TITULO
+      // =========================
+
+      pdf.setFontSize(20);
       pdf.setTextColor("#330775");
       pdf.setFont("helvetica", "bold");
-      pdf.text("Reporte General del Hotel", 14, 15);
+
+      pdf.text(
+        "Reporte General de Estadísticas del Hotel",
+        14,
+        15
+      );
 
       pdf.setFontSize(10);
       pdf.setTextColor("#000000");
       pdf.setFont("helvetica", "normal");
-      pdf.text(`Periodo: ${fechaDesde} - ${fechaHasta}`, 14, 22);
 
-      // ======================
-      // RESUMEN
-      // ======================
+      pdf.text(
+        `Periodo: ${fechaDesde} - ${fechaHasta}`,
+        14,
+        24
+      );
+
+      // =========================
+      // RESUMEN GENERAL
+      // =========================
+
       pdf.setFontSize(14);
+      pdf.setTextColor("#330775");
       pdf.setFont("helvetica", "bold");
+
       pdf.text("Resumen General", 14, 35);
 
-      pdf.setFontSize(10);
+      pdf.setFontSize(11);
+      pdf.setTextColor("#000000");
       pdf.setFont("helvetica", "normal");
 
-      pdf.text(`Ingresos: C$ ${estadisticas.totalIngresos.toFixed(2)}`, 14, 45);
-      pdf.text(`Reservas: ${estadisticas.reservas}`, 14, 52);
-      pdf.text(`Efectivo: C$ ${estadisticas.reservasEfectivo.toFixed(2)}`, 14, 59);
-      pdf.text(`Tarjeta: C$ ${estadisticas.reservasTarjeta.toFixed(2)}`, 14, 66);
-      pdf.text(`Habitaciones ocupadas: ${estadisticas.habitacionesOcupadas}`, 14, 73);
+      pdf.text(
+        `Ingresos Totales: C$ ${estadisticas.totalIngresos.toFixed(2)}`,
+        14,
+        45
+      );
 
-      // ======================
-      // GRÁFICO HORA
-      // ======================
-      const canvas1 = await html2canvas(graficoHoraRef.current);
-      const img1 = canvas1.toDataURL("image/png");
+      pdf.text(
+        `Reservas: ${estadisticas.reservas}`,
+        14,
+        53
+      );
 
-      pdf.addImage(img1, "PNG", 10, 80, 190, 70);
+      pdf.text(
+        `Reservas Efectivo: C$ ${estadisticas.reservasEfectivo.toFixed(2)}`,
+        14,
+        61
+      );
 
-      // ======================
-      // NUEVA PÁGINA
-      // ======================
-      pdf.addPage();
+      pdf.text(
+        `Reservas Tarjeta: C$ ${estadisticas.reservasTarjeta.toFixed(2)}`,
+        14,
+        69
+      );
+
+      pdf.text(
+        `Habitaciones Ocupadas: ${estadisticas.habitacionesOcupadas}`,
+        14,
+        77
+      );
+
+      // =========================
+      // GRAFICO HORA
+      // =========================
+
+      const canvasHora = await html2canvas(
+        graficoHoraRef.current
+      );
+
+      const imgHora =
+        canvasHora.toDataURL("image/png");
 
       pdf.setFontSize(14);
+      pdf.setTextColor("#330775");
       pdf.setFont("helvetica", "bold");
-      pdf.text("Tipos de Habitación", 14, 15);
 
-      // ======================
-      // GRÁFICO PIE
-      // ======================
-      const canvas2 = await html2canvas(graficoTipoHabitacionRef.current);
-      const img2 = canvas2.toDataURL("image/png");
+      pdf.text(
+        "Reservas por Hora",
+        14,
+        90
+      );
 
-      pdf.addImage(img2, "PNG", 10, 25, 190, 90);
+      pdf.addImage(
+        imgHora,
+        "PNG",
+        10,
+        95,
+        190,
+        70
+      );
 
-      // ======================
-      // TABLA TIPOS
-      // ======================
+      // =========================
+      // NUEVA PAGINA
+      // =========================
+
+      pdf.addPage();
+
+      // =========================
+      // GRAFICO CATEGORIA
+      // =========================
+
+      const canvasCategoria =
+        await html2canvas(
+          graficoCategoriaRef.current
+        );
+
+      const imgCategoria =
+        canvasCategoria.toDataURL("image/png");
+
+      pdf.setFontSize(14);
+      pdf.setTextColor("#330775");
+      pdf.setFont("helvetica", "bold");
+
+      pdf.text(
+        "Tipos de Habitación",
+        14,
+        20
+      );
+
+      pdf.addImage(
+        imgCategoria,
+        "PNG",
+        10,
+        30,
+        190,
+        90
+      );
+
+      // =========================
+      // TABLA CATEGORIAS
+      // =========================
+
+      const filasCategoria =
+        estadisticas.reservasPorTipoHabitacion.map(
+          (item) => [
+            item.name,
+            `C$ ${item.value.toFixed(2)}`
+          ]
+        );
+
       autoTable(pdf, {
-        startY: 120,
-        head: [["Tipo Habitación", "Valor"]],
-        body: estadisticas.reservasPorTipoHabitacion.map(item => [
-          item.name,
-          item.value
-        ])
+        startY: 130,
+        head: [["Tipo Habitación", "Monto"]],
+        body: filasCategoria
       });
 
-      // ======================
+      // =========================
       // GUARDAR
-      // ======================
-      const fechaActual = new Date().toLocaleDateString("en-CA", {
-        timeZone: "America/Managua"
-      });
+      // =========================
 
-      pdf.save(`ReporteGeneral_${fechaActual}.pdf`);
+      const fechaActual =
+        new Date().toLocaleDateString(
+          "en-CA",
+          {
+            timeZone: "America/Managua"
+          }
+        );
+
+      pdf.save(
+        `ReporteGeneral_${fechaActual}.pdf`
+      );
 
     } catch (error) {
+
       console.error(error);
-      alert("Error generando PDF general");
+
+      alert("Error generando PDF General");
     }
   };
 
   const [estadisticas, setEstadisticas] = useState({
     totalIngresos: 0,
-    reservas: 0,
     reservasEfectivo: 0,
     reservasTarjeta: 0,
     habitacionesOcupadas: 0,
+    reservas: 0,
     reservasPorHora: [],
     reservasPorTipoHabitacion: []
   });
 
   // =========================
-  // EFFECT
+  // EFFECTS
   // =========================
 
   useEffect(() => {
@@ -362,33 +404,85 @@ const Inicio = () => {
   }, [fechaDesde, fechaHasta]);
 
   // =========================
-  // CARGAR DATOS
+  // FUNCIONES
   // =========================
 
   const cargarDatos = async (desde, hasta) => {
     try {
       setCargando(true);
 
-      const inicioRango = `${desde} 00:00:00`;
-      const finRango = `${hasta} 23:59:59`;
+      const inicioRango = `${desde}T00:00:00`;
+      const finRango = `${hasta}T23:59:59`;
+
+      console.log("🔍 Buscando entre:", inicioRango, "y", finRango);
 
       // =========================
       // RESERVAS
       // =========================
 
-      const { data: reservas } = await supabase
-        .from("Reserva")
+      const { data: reservas, error } = await supabase
+        .from("reserva")
         .select("id_reserva, monto, hora_entrada, forma_pago, id_habitacion")
         .gte("hora_entrada", inicioRango)
         .lte("hora_entrada", finRango);
 
+      if (error) {
+        console.error("❌ Error Supabase:", error);
+        throw error;
+      }
+
+      console.log("✅ Reservas obtenidas:", reservas?.length, reservas);
+
       // =========================
-      // HABITACIONES (SIEMPRE ACTUALIZADO)
+      // HABITACIONES
       // =========================
 
-      const { data: habitaciones } = await supabase
-        .from("Habitacion")
+      const { data: habitaciones, error: errorHabitaciones } = await supabase
+        .from("habitacion")
         .select("id_habitacion, tipo_habitacion");
+
+      if (errorHabitaciones) {
+        console.error("❌ Error habitaciones:", errorHabitaciones);
+        throw errorHabitaciones;
+      }
+
+      console.log("✅ Habitaciones obtenidas:", habitaciones?.length);
+
+      // =========================
+      // DATOS TIPO HABITACION
+      // =========================
+
+      let reservasPorTipoHabitacion = [];
+
+      if (reservas && reservas.length > 0) {
+
+        const tipoMap = {};
+
+        reservas.forEach((r) => {
+
+          const habitacion = habitaciones?.find(
+            (h) => h.id_habitacion === r.id_habitacion
+          );
+
+          const tipo = habitacion?.tipo_habitacion || "Sin tipo";
+
+          if (!tipoMap[tipo]) {
+            tipoMap[tipo] = 0;
+          }
+
+          tipoMap[tipo] += r.monto || 0;
+        });
+
+        reservasPorTipoHabitacion = Object.keys(tipoMap).map(
+          (key) => ({
+            name: key,
+            value: tipoMap[key]
+          })
+        );
+
+        reservasPorTipoHabitacion.sort((a, b) => b.value - a.value);
+        console.log("📊 Tipos habitación:", reservasPorTipoHabitacion);
+      }
 
       // =========================
       // TOTALES
@@ -398,62 +492,47 @@ const Inicio = () => {
         reservas?.reduce((sum, r) => sum + (r.monto || 0), 0) || 0;
 
       const reservasEfectivo =
-        reservas?.filter(r => r.forma_pago === "efectivo")
+        reservas
+          ?.filter((r) => r.forma_pago === "efectivo")
           .reduce((sum, r) => sum + (r.monto || 0), 0) || 0;
 
       const reservasTarjeta =
-        reservas?.filter(r => r.forma_pago === "tarjeta")
+        reservas
+          ?.filter((r) => r.forma_pago === "tarjeta")
           .reduce((sum, r) => sum + (r.monto || 0), 0) || 0;
 
       const habitacionesOcupadas =
-        new Set(reservas?.map(r => r.id_habitacion)).size;
+        new Set(reservas?.map((r) => r.id_habitacion)).size || 0;
+
+      console.log("💰 Totales:", { totalIngresos, reservasEfectivo, reservasTarjeta, habitacionesOcupadas });
 
       // =========================
-      // 🔥 PIE CHART (FIX DEFINITIVO)
-      // =========================
-
-      let mapaTipos = {};
-
-      reservas?.forEach(r => {
-
-        const habitacion = habitaciones?.find(
-          h => h.id_habitacion === r.id_habitacion
-        );
-
-        const tipo = habitacion?.tipo_habitacion || "Sin tipo";
-
-        if (!mapaTipos[tipo]) {
-          mapaTipos[tipo] = 0;
-        }
-
-        mapaTipos[tipo] += r.monto || 0;
-      });
-
-      let reservasPorTipoHabitacion =
-        Object.keys(mapaTipos).map(key => ({
-          name: key,
-          value: mapaTipos[key]
-        }));
-
-      // 🔥 SI NO HAY DATOS (EVITA GRÁFICO VACÍO)
-      if (reservasPorTipoHabitacion.length === 0) {
-        reservasPorTipoHabitacion = [
-          { name: "Sin datos", value: 1 }
-        ];
-      }
-
-      // =========================
-      // POR HORA
+      // RESERVAS POR HORA
       // =========================
 
       const horaMap = Array(24).fill(0);
 
-      reservas?.forEach(r => {
-        if (!r.hora_entrada) return;
+      reservas?.forEach((reserva) => {
+        if (!reserva.hora_entrada) {
+          console.warn("⚠️ Reserva sin hora_entrada:", reserva);
+          return;
+        }
 
-        const hora = new Date(r.hora_entrada).getHours();
-        horaMap[hora] += r.monto || 0;
+        try {
+          const fechaObj = new Date(reserva.hora_entrada);
+          const hora = fechaObj.getHours();
+
+          console.log(`📅 Reserva: ${reserva.hora_entrada} → Hora: ${hora}, Monto: ${reserva.monto}`);
+
+          if (hora >= 0 && hora < 24) {
+            horaMap[hora] += reserva.monto || 0;
+          }
+        } catch (err) {
+          console.error("❌ Error parseando fecha:", reserva.hora_entrada, err);
+        }
       });
+
+      console.log("⏰ HoraMap:", horaMap);
 
       const reservasPorHora = [];
       let acumulado = 0;
@@ -467,50 +546,127 @@ const Inicio = () => {
         });
       }
 
+      console.log("📈 Datos gráfico línea:", reservasPorHora);
+
       // =========================
-      // SET STATE FINAL
+      // SET ESTADISTICAS
       // =========================
 
-      setEstadisticas({
+      const estadisticasFinales = {
         totalIngresos,
-        reservas: reservas?.length || 0,
         reservasEfectivo,
         reservasTarjeta,
         habitacionesOcupadas,
+        reservas: reservas?.length || 0,
         reservasPorHora,
         reservasPorTipoHabitacion
-      });
+      };
+
+      console.log("🎯 Estado final:", estadisticasFinales);
+
+      setEstadisticas(estadisticasFinales);
 
     } catch (err) {
-      console.error("Error:", err);
+
+      console.error("❌ Error al cargar estadísticas:", err);
+
     } finally {
+
       setCargando(false);
     }
-  };
+  }
 
   // =========================
-  // EXCEL
+  // DESCARGAR EXCEL
   // =========================
 
   const descargarExcel = async () => {
-    const { data } = await supabase.from("Reserva").select("*");
 
-    const wb = XLSX.utils.book_new();
+    try {
 
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.json_to_sheet(data || []),
-      "Reservas"
-    );
+      setCargando(true);
 
-    XLSX.writeFile(wb, "reservas.xlsx");
+      const inicioRango = `${fechaDesde} 00:00:00`;
+      const finRango = `${fechaHasta} 23:59:59`;
+
+      // =========================
+      // OBTENER RESERVAS
+      // =========================
+
+      const { data: reservas, error: errorReservas } = await supabase
+        .from("reserva")
+        .select(`
+          id_reserva,
+          hora_entrada,
+          monto,
+          forma_pago
+        `)
+        .gte("hora_entrada", inicioRango)
+        .lte("hora_entrada", finRango)
+        .order("hora_entrada", { ascending: false });
+
+      if (errorReservas) throw errorReservas;
+
+      // =========================
+      // CREAR EXCEL
+      // =========================
+
+      const wb = XLSX.utils.book_new();
+
+      // HOJA RESERVAS
+
+      if (reservas && reservas.length > 0) {
+
+        const wsReservas = XLSX.utils.json_to_sheet(reservas);
+
+        XLSX.utils.book_append_sheet(
+          wb,
+          wsReservas,
+          "Reservas"
+        );
+
+      } else {
+
+        XLSX.utils.book_append_sheet(
+          wb,
+          XLSX.utils.json_to_sheet([
+            {
+              Mensaje: "No hay reservas en este rango"
+            }
+          ]),
+          "Reservas"
+        );
+      }
+
+      XLSX.writeFile(
+        wb,
+        `Reporte_Reservas_${fechaDesde}_a_${fechaHasta}.xlsx`
+      );
+
+    } catch (err) {
+
+      console.error("Error generando Excel:", err);
+
+      alert("Error al generar el Excel. Revisa la consola.");
+
+    } finally {
+
+      setCargando(false);
+    }
   };
 
   // =========================
   // COLORES
   // =========================
 
-  const COLORES = ["#5e26b2", "#39ff95", "#ff6bc6", "#00d4ff", "#ffa500"];
+  const COLORES = [
+    "#5e26b2",
+    "#39ff95",
+    "#ff6bc6",
+    "#8b46ff",
+    "#00d4ff",
+    "#ffd93d"
+  ];
 
   // =========================
   // LOADING
@@ -518,32 +674,45 @@ const Inicio = () => {
 
   if (cargando) {
     return (
-      <div className="text-center mt-5">
-        <Spinner animation="border" />
-        <p>Cargando...</p>
-      </div>
+      <Container className="text-center mt-5">
+        <Spinner
+          animation="border"
+          variant="primary"
+          size="lg"
+        />
+
+        <p className="mt-3">
+          Cargando estadísticas...
+        </p>
+      </Container>
     );
   }
 
   // =========================
-  // UI
+  // RENDER
   // =========================
 
   return (
     <div className="mt-2">
 
-      <h2>Dashboard Hotelero</h2>
-      <h6>Posada El Recuerdo</h6>
+      {/* TITULO */}
+
+      <div className="mb-4">
+        <h2>Dashboard</h2>
+        <h6>Estadísticas del Hotel</h6>
+      </div>
 
       {/* FILTROS */}
-      {/* FILTROS */}
+
       <Row className="mb-4">
 
         <Col md={3}>
           <Form.Control
             type="date"
             value={fechaDesde}
-            onChange={(e) => setFechaDesde(e.target.value)}
+            onChange={(e) =>
+              setFechaDesde(e.target.value)
+            }
           />
         </Col>
 
@@ -551,86 +720,129 @@ const Inicio = () => {
           <Form.Control
             type="date"
             value={fechaHasta}
-            onChange={(e) => setFechaHasta(e.target.value)}
+            onChange={(e) =>
+              setFechaHasta(e.target.value)
+            }
           />
         </Col>
 
-        <Col md={6} className="d-flex gap-2">
+        <Col
+          md={6}
+          className="d-flex gap-2"
+        >
 
-          {/* EXPORTAR EXCEL */}
           <Button
             variant="success"
             onClick={descargarExcel}
           >
             <i className="bi bi-file-earmark-excel me-2"></i>
+
             Exportar Excel
           </Button>
 
-          {/* PDF GENERAL (IMPORTANTE: esta función debe existir) */}
           <Button
             variant="danger"
             onClick={generarPdfGeneral}
           >
             <i className="bi bi-file-earmark-pdf me-2"></i>
+
             PDF General
           </Button>
 
         </Col>
 
       </Row>
-
       {/* TARJETAS */}
-      <Row className="g-4 mb-4">
 
-        <Col md={3}>
-          <Card className="bg-success text-white">
+      <Row className="g-4 mb-5">
+
+        <Col md={6} lg={3}>
+          <Card
+            className="h-100 text-white shadow"
+            style={{
+              background:
+                "linear-gradient(135deg, #28a745, #34ce57)"
+            }}
+          >
             <Card.Body>
-              <h6>Ingresos</h6>
-              <h3>C$ {estadisticas.totalIngresos.toFixed(2)}</h3>
+              <h5>Ingresos Totales</h5>
+
+              <h2>
+                C$ {estadisticas.totalIngresos.toFixed(2)}
+              </h2>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col md={3}>
-          <Card className="bg-primary text-white">
+        <Col md={6} lg={3}>
+          <Card
+            className="h-100 text-white shadow"
+            style={{
+              background:
+                "linear-gradient(135deg, #0166d3, #3399ff)"
+            }}
+          >
             <Card.Body>
-              <h6>Reservas</h6>
-              <h3>{estadisticas.reservas}</h3>
+              <h5>Efectivo</h5>
+
+              <h2>
+                C$ {estadisticas.reservasEfectivo.toFixed(2)}
+              </h2>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col md={3}>
-          <Card className="bg-warning text-white">
+        <Col md={6} lg={3}>
+          <Card
+            className="h-100 text-white shadow"
+            style={{
+              background:
+                "linear-gradient(135deg, #5ea5f1, #94c0ec)"
+            }}
+          >
             <Card.Body>
-              <h6>Efectivo</h6>
-              <h3>C$ {estadisticas.reservasEfectivo.toFixed(2)}</h3>
+              <h5>Tarjeta</h5>
+
+              <h2>
+                C$ {estadisticas.reservasTarjeta.toFixed(2)}
+              </h2>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col md={3}>
-          <Card className="bg-dark text-white">
+        <Col md={6} lg={3}>
+          <Card
+            className="h-100 text-white shadow"
+            style={{
+              background:
+                "linear-gradient(135deg, #e27d01, #ffa500)"
+            }}
+          >
             <Card.Body>
-              <h6>Habitaciones ocupadas</h6>
-              <h3>{estadisticas.habitacionesOcupadas}</h3>
+              <h5>Habitaciones Ocupadas</h5>
+
+              <h2>
+                {estadisticas.habitacionesOcupadas}
+              </h2>
             </Card.Body>
           </Card>
         </Col>
 
       </Row>
 
-      {/* GRÁFICOS */}
-      <Row>
+      {/* GRAFICOS */}
 
-        {/* LINE */}
+      <Row className="g-4">
+
+        {/* LINE CHART */}
+
         <Col lg={8}>
           <Card className="shadow border-0">
 
             <Card.Body ref={graficoHoraRef}>
 
               <h5 className="mb-3">
-                Ingresos por Hora
+                Reservas por Hora
               </h5>
 
               <ResponsiveContainer
@@ -681,36 +893,47 @@ const Inicio = () => {
           </Card>
         </Col>
 
-        {/* PIE (YA FUNCIONA AL REGISTRAR HABITACIONES) */}
+        {/* PIE CHART */}
+
         <Col lg={4}>
+          <Card className="shadow border-0">
 
-          <Card>
+            <Card.Body ref={graficoCategoriaRef}>
 
-            <Card.Body ref={graficoTipoHabitacionRef}>
-              <h5>
+              <h5 className="mb-3">
                 Tipos de Habitación
               </h5>
 
               <ResponsiveContainer
                 width="100%"
-                height={300}
+                height={360}
               >
                 <PieChart>
 
                   <Pie
                     data={
-                      estadisticas.reservasPorTipoHabitacion
+                      estadisticas.reservasPorTipoHabitacion.length > 0
+                        ? estadisticas.reservasPorTipoHabitacion
+                        : [
+                          {
+                            name: "Sin datos",
+                            value: 1
+                          }
+                        ]
                     }
                     dataKey="value"
                     nameKey="name"
-                    outerRadius={100}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={110}
                     label
                   >
 
                     {estadisticas.reservasPorTipoHabitacion.map(
                       (_, i) => (
                         <Cell
-                          key={i}
+                          key={`cell-${i}`}
                           fill={
                             COLORES[
                             i % COLORES.length
@@ -722,34 +945,33 @@ const Inicio = () => {
 
                   </Pie>
 
-                  <Tooltip />
+                  <Tooltip
+                    formatter={(v) => `C$ ${v}`}
+                  />
 
                 </PieChart>
               </ResponsiveContainer>
 
-              <div className="mt-3">
-
-                <Button
-                  variant="danger"
-                  onClick={generarPdfTiposHabitacion}
-                >
-                  <i className="bi bi-file-earmark-pdf me-2"></i>
-
-                  Descargar PDF
-                </Button>
-
-              </div>
-
             </Card.Body>
 
-          </Card>
+            <div className="p-3">
+              <Button
+                variant="danger"
+                onClick={generarPdfTiposHabitacion}
+              >
+                <i className="bi bi-file-earmark-pdf me-2"></i>
 
+                Descargar PDF
+              </Button>
+            </div>
+
+          </Card>
         </Col>
 
       </Row>
 
     </div>
   );
-};
+}; 
 
 export default Inicio;
