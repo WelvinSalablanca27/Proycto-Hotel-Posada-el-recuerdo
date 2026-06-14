@@ -389,6 +389,7 @@ const Inicio = () => {
     totalIngresos: 0,
     reservasEfectivo: 0,
     reservasTarjeta: 0,
+    reservasTransferencia: 0,
     habitacionesOcupadas: 0,
     reservas: 0,
     reservasPorHora: [],
@@ -501,6 +502,11 @@ const Inicio = () => {
           ?.filter((r) => r.forma_pago === "tarjeta")
           .reduce((sum, r) => sum + (r.monto || 0), 0) || 0;
 
+      const reservasTransferencia =
+        reservas
+          ?.filter((r) => r.forma_pago === "transferencia")
+          .reduce((sum, r) => sum + (r.monto || 0), 0) || 0;
+
       const habitacionesOcupadas =
         new Set(reservas?.map((r) => r.id_habitacion)).size || 0;
 
@@ -556,6 +562,7 @@ const Inicio = () => {
         totalIngresos,
         reservasEfectivo,
         reservasTarjeta,
+        reservasTransferencia,
         habitacionesOcupadas,
         reservas: reservas?.length || 0,
         reservasPorHora,
@@ -805,6 +812,24 @@ const Inicio = () => {
 
               <h2>
                 C$ {estadisticas.reservasTarjeta.toFixed(2)}
+              </h2>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col md={6} lg={3}>
+          <Card
+            className="h-100 text-white shadow"
+            style={{
+              background:
+                "linear-gradient(135deg, #7c3aed, #a78bfa)"
+            }}
+          >
+            <Card.Body>
+              <h5>Transferencia</h5>
+
+              <h2>
+                C$ {estadisticas.reservasTransferencia.toFixed(2)}
               </h2>
             </Card.Body>
           </Card>
