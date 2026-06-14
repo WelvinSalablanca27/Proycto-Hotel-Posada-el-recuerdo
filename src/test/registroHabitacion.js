@@ -1,17 +1,10 @@
 function registroHabitacion(habitacion) {
-    const {
-        numero_habitacion,
-        tipo_habitacion,
-        tipo_camas,
-        tipo_clima,
-        precio,
-        estado
-    } = habitacion;
+    const { numero_habitacion, tipo_habitacion, tipo_camas,
+        tipo_clima, precio, estado } = habitacion;
 
     const num = Number(numero_habitacion);
     const pre = Number(precio);
 
-    // Obligatorios
     if (
         numero_habitacion === "" || numero_habitacion == null ||
         tipo_habitacion === "" || tipo_habitacion == null ||
@@ -22,8 +15,6 @@ function registroHabitacion(habitacion) {
     ) {
         return { valido: false, mensaje: "Todos los campos son obligatorios" };
     }
-
-    // Número habitación
     if (isNaN(num)) {
         return { valido: false, mensaje: "El número de habitación debe ser numérico" };
     }
@@ -32,24 +23,20 @@ function registroHabitacion(habitacion) {
         return { valido: false, mensaje: "El número de habitación debe ser válido" };
     }
 
-    // ⚠️ MÁS FLEXIBLE (ESTO ES CLAVE)
     if (typeof tipo_habitacion !== "string") {
         return { valido: false, mensaje: "El tipo de habitación solo puede contener letras" };
     }
 
-    // Precio
     if (isNaN(pre) || pre <= 0) {
         return { valido: false, mensaje: "El precio debe ser mayor que 0" };
     }
 
-    // Estado
     const estadosValidos = ["Disponible", "Ocupada", "Mantenimiento"];
 
     if (!estadosValidos.includes(estado)) {
         return { valido: false, mensaje: "El estado no es válido" };
     }
 
-    // ⚠️ ELIMINAMOS regex agresivo (causa del fallo)
     if (typeof tipo_camas !== "string") {
         return { valido: false, mensaje: "El tipo de camas solo puede contener letras" };
     }
