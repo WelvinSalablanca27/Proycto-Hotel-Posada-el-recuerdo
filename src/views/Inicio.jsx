@@ -867,7 +867,7 @@ const Inicio = () => {
             <Card.Body ref={graficoHoraRef}>
 
               <h5 className="mb-3">
-                Reservas por Hora
+                Reservas por Mes
               </h5>
 
               <ResponsiveContainer
