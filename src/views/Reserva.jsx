@@ -270,21 +270,6 @@ const Reserva = () => {
 
     resetFormulario();
 
-    const ahora = new Date();
-
-    const fechaHoraLocal =
-        ahora.getFullYear() +
-        "-" +
-        String(ahora.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(ahora.getDate()).padStart(2, "0") +
-        "T" +
-        String(ahora.getHours()).padStart(2, "0") +
-        ":" +
-        String(ahora.getMinutes()).padStart(2, "0");
-
-    setHoraEntrada(fechaHoraLocal);
-
     setMostrarFormulario(true);
 
 };

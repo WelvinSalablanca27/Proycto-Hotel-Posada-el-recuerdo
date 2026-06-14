@@ -7,6 +7,7 @@ import {
   Button,
   Card
 } from "react-bootstrap";
+import "./FormularioReserva.css";
 
 const FormularioReserva = ({
   mostrar,
@@ -38,13 +39,16 @@ const FormularioReserva = ({
       show={mostrar}
       onHide={() => setMostrar(false)}
       backdrop="static"
-      size="xl"
+      size="lg"
       centered
+      className="modal-reserva"
     >
 
-      <Modal.Header closeButton>
+      <Modal.Header className="header-reserva" closeButton>
 
-        <Modal.Title>
+        <Modal.Title className="titulo-reserva">
+
+          <i className={`bi bi-${reservaAEditar ? "pencil-square" : "plus-circle"} me-2`}></i>
 
           {reservaAEditar
             ? "Editar Reserva"
@@ -54,300 +58,362 @@ const FormularioReserva = ({
 
       </Modal.Header>
 
-      <Modal.Body>
+      <Modal.Body className="body-reserva">
 
-        <Row>
+        <Row className="g-4">
 
           {/* FORMULARIO */}
           <Col lg={7} md={6}>
 
-            <h5>
-              Datos de la Reserva
-            </h5>
+            <div className="formulario-section">
+              <h5 className="titulo-seccion">
+                <i className="bi bi-info-circle me-2"></i>
+                Datos de la Reserva
+              </h5>
 
-            {/* HUÉSPED */}
-            <Form.Group className="mb-3">
+              {/* HUÉSPED */}
+              <Form.Group className="mb-4">
 
-              <Form.Label>
-                Huésped *
-              </Form.Label>
+                <Form.Label className="label-personalizado">
+                  <span className="badge bg-primary me-2">1</span>
+                  Huésped *
+                </Form.Label>
 
-              <Form.Select
-                value={
-                  huespedSeleccionado?.id_huesped || ""
-                }
-                onChange={(e) => {
+                <Form.Select
+                  className="select-personalizado"
+                  value={
+                    huespedSeleccionado?.id_huesped || ""
+                  }
+                  onChange={(e) => {
 
-                  const huesped =
-                    huespedes.find(
-                      h =>
-                        h.id_huesped ===
-                        Number(e.target.value)
-                    );
+                    const huesped =
+                      huespedes.find(
+                        h =>
+                          h.id_huesped ===
+                          Number(e.target.value)
+                      );
 
-                  setHuespedSeleccionado(huesped);
+                    setHuespedSeleccionado(huesped);
 
-                }}
-              >
+                  }}
+                >
 
-                <option value="">
-                  Seleccionar huésped...
-                </option>
-
-                {huespedes.map((h) => (
-
-                  <option
-                    key={h.id_huesped}
-                    value={h.id_huesped}
-                  >
-
-                    {h.primer_nombre}{" "}
-                    {h.primer_apellido}
-
+                  <option value="">
+                    Seleccionar huésped...
                   </option>
 
-                ))}
+                  {huespedes.map((h) => (
 
-              </Form.Select>
+                    <option
+                      key={h.id_huesped}
+                      value={h.id_huesped}
+                    >
 
-            </Form.Group>
+                      {h.primer_nombre}{" "}
+                      {h.primer_apellido}
 
-            {/* RECEPCIONISTA */}
-            <Form.Group className="mb-3">
+                    </option>
 
-              <Form.Label>
-                Recepcionista *
-              </Form.Label>
+                  ))}
 
-              <Form.Select
-                value={
-                  recepcionistaSeleccionado?.id_recepcionista || ""
-                }
-                onChange={(e) => {
+                </Form.Select>
 
-                  const recepcionista =
-                    recepcionistas.find(
-                      r =>
-                        r.id_recepcionista ===
-                        Number(e.target.value)
+              </Form.Group>
+
+              {/* RECEPCIONISTA */}
+              <Form.Group className="mb-4">
+
+                <Form.Label className="label-personalizado">
+                  <span className="badge bg-primary me-2">2</span>
+                  Recepcionista *
+                </Form.Label>
+
+                <Form.Select
+                  className="select-personalizado"
+                  value={
+                    recepcionistaSeleccionado?.id_recepcionista || ""
+                  }
+                  onChange={(e) => {
+
+                    const recepcionista =
+                      recepcionistas.find(
+                        r =>
+                          r.id_recepcionista ===
+                          Number(e.target.value)
+                      );
+
+                    setRecepcionistaSeleccionado(
+                      recepcionista
                     );
 
-                  setRecepcionistaSeleccionado(
-                    recepcionista
-                  );
+                  }}
+                >
 
-                }}
-              >
-
-                <option value="">
-                  Seleccionar recepcionista...
-                </option>
-
-                {recepcionistas.map((r) => (
-
-                  <option
-                    key={r.id_recepcionista}
-                    value={r.id_recepcionista}
-                  >
-
-                    {r.nombre}{" "}
-                    {r.apellido}
-
+                  <option value="">
+                    Seleccionar recepcionista...
                   </option>
 
-                ))}
+                  {recepcionistas.map((r) => (
 
-              </Form.Select>
+                    <option
+                      key={r.id_recepcionista}
+                      value={r.id_recepcionista}
+                    >
 
-            </Form.Group>
+                      {r.nombre}{" "}
+                      {r.apellido}
 
-            {/* HABITACIÓN */}
-            <Form.Group className="mb-3">
+                    </option>
 
-              <Form.Label>
-                Habitación *
-              </Form.Label>
+                  ))}
 
-              <Form.Select
-                value={
-                  habitacionSeleccionada?.id_habitacion || ""
-                }
-                onChange={(e) => {
+                </Form.Select>
 
-                  const habitacion =
-                    habitaciones.find(
-                      h =>
-                        h.id_habitacion ===
-                        Number(e.target.value)
+              </Form.Group>
+
+              {/* HABITACIÓN */}
+              <Form.Group className="mb-4">
+
+                <Form.Label className="label-personalizado">
+                  <span className="badge bg-primary me-2">3</span>
+                  Habitación *
+                </Form.Label>
+
+                <Form.Select
+                  className="select-personalizado"
+                  value={
+                    habitacionSeleccionada?.id_habitacion || ""
+                  }
+                  onChange={(e) => {
+
+                    const habitacion =
+                      habitaciones.find(
+                        h =>
+                          h.id_habitacion ===
+                          Number(e.target.value)
+                      );
+
+                    setHabitacionSeleccionada(
+                      habitacion
                     );
 
-                  setHabitacionSeleccionada(
-                    habitacion
-                  );
+                  }}
+                >
 
-                }}
-              >
-
-                <option value="">
-                  Seleccionar habitación...
-                </option>
-
-                {habitaciones.map((h) => (
-
-                  <option
-                    key={h.id_habitacion}
-                    value={h.id_habitacion}
-                  >
-
-                    Habitación #
-                    {h.numero_habitacion} - {" "}
-                    {h.tipo_habitacion}
-
+                  <option value="">
+                    Seleccionar habitación...
                   </option>
 
-                ))}
+                  {habitaciones.map((h) => (
 
-              </Form.Select>
+                    <option
+                      key={h.id_habitacion}
+                      value={h.id_habitacion}
+                    >
 
-            </Form.Group>
+                      Habitación #
+                      {h.numero_habitacion} - {" "}
+                      {h.tipo_habitacion}
 
-            {/* ENTRADA */}
-            <Form.Group className="mb-3">
+                    </option>
 
-              <Form.Label>
-                Hora Entrada
-              </Form.Label>
+                  ))}
 
-              <Form.Control
-                type="datetime-local"
-                value={horaEntrada}
-                onChange={(e) =>
-                  setHoraEntrada(e.target.value)
-                }
-              />
+                </Form.Select>
 
-            </Form.Group>
+              </Form.Group>
 
-            {/* SALIDA */}
-            <Form.Group className="mb-3">
+              <div className="divider-seccion"></div>
 
-              <Form.Label>
-                Hora Salida
-              </Form.Label>
+              {/* ENTRADA */}
+              <Form.Group className="mb-4">
 
-              <Form.Control
-                type="datetime-local"
-                value={horaSalida}
-                onChange={(e) =>
-                  setHoraSalida(e.target.value)
-                }
-              />
+                <Form.Label className="label-personalizado">
+                  <i className="bi bi-calendar-check me-2"></i>
+                  Hora Entrada
+                </Form.Label>
 
-            </Form.Group>
+                <Form.Control
+                  type="datetime-local"
+                  className="input-personalizado"
+                  value={horaEntrada}
+                  onChange={(e) =>
+                    setHoraEntrada(e.target.value)
+                  }
+                />
 
-            {/* FORMA PAGO */}
-            <Form.Group className="mb-3">
+              </Form.Group>
 
-              <Form.Label>
-                Forma Pago
-              </Form.Label>
+              {/* SALIDA */}
+              <Form.Group className="mb-4">
 
-              <Form.Select
-                value={formaPago}
-                onChange={(e) =>
-                  setFormaPago(e.target.value)
-                }
-              >
+                <Form.Label className="label-personalizado">
+                  <i className="bi bi-calendar-x me-2"></i>
+                  Hora Salida
+                </Form.Label>
 
-                <option value="efectivo">
-                  Efectivo
-                </option>
+                <Form.Control
+                  type="datetime-local"
+                  className="input-personalizado"
+                  value={horaSalida}
+                  onChange={(e) =>
+                    setHoraSalida(e.target.value)
+                  }
+                />
 
-                <option value="tarjeta">
-                  Tarjeta
-                </option>
+              </Form.Group>
 
-                <option value="transferencia">
-                  Transferencia
-                </option>
+              <div className="divider-seccion"></div>
 
-              </Form.Select>
+              {/* FORMA PAGO */}
+              <Form.Group className="mb-4">
 
-            </Form.Group>
+                <Form.Label className="label-personalizado">
+                  <i className="bi bi-credit-card me-2"></i>
+                  Forma Pago
+                </Form.Label>
 
-            {/* MONTO */}
-            <Form.Group className="mb-3">
+                <Form.Select
+                  className="select-personalizado"
+                  value={formaPago}
+                  onChange={(e) =>
+                    setFormaPago(e.target.value)
+                  }
+                >
 
-              <Form.Label>
-                Monto
-              </Form.Label>
+                  <option value="efectivo">
+                    💵 Efectivo
+                  </option>
 
-              <Form.Control
-                type="number"
-                value={monto}
-                onChange={(e) =>
-                  setMonto(e.target.value)
-                }
-              />
+                  <option value="tarjeta">
+                    💳 Tarjeta
+                  </option>
 
-            </Form.Group>
+                  <option value="transferencia">
+                    🔄 Transferencia
+                  </option>
+
+                </Form.Select>
+
+              </Form.Group>
+
+              {/* MONTO */}
+              <Form.Group className="mb-2">
+
+                <Form.Label className="label-personalizado">
+                  <i className="bi bi-cash-coin me-2"></i>
+                  Monto
+                </Form.Label>
+
+                <Form.Control
+                  type="number"
+                  className="input-personalizado"
+                  value={monto}
+                  onChange={(e) =>
+                    setMonto(e.target.value)
+                  }
+                  placeholder="0.00"
+                />
+
+              </Form.Group>
+
+            </div>
 
           </Col>
 
           {/* RESUMEN */}
           <Col lg={5} md={6}>
 
-            <Card className="h-100">
+            <Card className="card-resumen">
 
-              <Card.Header>
+              <Card.Header className="header-card-resumen">
 
                 <strong>
+                  <i className="bi bi-receipt me-2"></i>
                   Resumen Reserva
                 </strong>
 
               </Card.Header>
 
-              <Card.Body>
+              <Card.Body className="body-card-resumen">
 
-                <p>
+                <div className="item-resumen">
+                  <span className="label-resumen">
+                    <i className="bi bi-person me-2"></i>
+                    Huésped
+                  </span>
+                  <span className="valor-resumen">
 
-                  <strong>Huésped:</strong>{" "}
+                    {huespedSeleccionado
+                      ? `${huespedSeleccionado.primer_nombre}
+                         ${huespedSeleccionado.primer_apellido}`
+                      : <span className="text-muted">No seleccionado</span>}
 
-                  {huespedSeleccionado
-                    ? `${huespedSeleccionado.primer_nombre}
-                       ${huespedSeleccionado.primer_apellido}`
-                    : "No seleccionado"}
+                  </span>
+                </div>
 
-                </p>
+                <div className="item-resumen">
+                  <span className="label-resumen">
+                    <i className="bi bi-door-closed me-2"></i>
+                    Habitación
+                  </span>
+                  <span className="valor-resumen">
 
-                <p>
+                    {habitacionSeleccionada
+                      ? `#${habitacionSeleccionada.numero_habitacion}
+                         - ${habitacionSeleccionada.tipo_habitacion}`
+                      : <span className="text-muted">No seleccionada</span>}
 
-                  <strong>Habitación:</strong>{" "}
+                  </span>
+                </div>
 
-                  {habitacionSeleccionada
-                    ? `#${habitacionSeleccionada.numero_habitacion}
-                       - ${habitacionSeleccionada.tipo_habitacion}`
-                    : "No seleccionada"}
+                <div className="item-resumen">
+                  <span className="label-resumen">
+                    <i className="bi bi-calendar-event me-2"></i>
+                    Entrada
+                  </span>
+                  <span className="valor-resumen">
 
-                </p>
+                    {horaEntrada
+                      ? new Date(horaEntrada).toLocaleString("es-NI")
+                      : <span className="text-muted">No definido</span>}
 
-                <p>
+                  </span>
+                </div>
 
-                  <strong>Forma Pago:</strong>{" "}
+                <div className="item-resumen">
+                  <span className="label-resumen">
+                    <i className="bi bi-calendar-event me-2"></i>
+                    Salida
+                  </span>
+                  <span className="valor-resumen">
 
-                  {formaPago}
+                    {horaSalida
+                      ? new Date(horaSalida).toLocaleString("es-NI")
+                      : <span className="text-muted">No definido</span>}
 
-                </p>
+                  </span>
+                </div>
 
-                <hr />
+                <div className="item-resumen">
+                  <span className="label-resumen">
+                    <i className="bi bi-credit-card me-2"></i>
+                    Forma Pago
+                  </span>
+                  <span className="valor-resumen">
+                    {formaPago}
+                  </span>
+                </div>
 
-                <div className="d-flex justify-content-between align-items-center fs-4 fw-bold">
+                <hr className="divider-resumen" />
 
-                  <span>
+                <div className="total-resumen">
+
+                  <span className="label-total">
                     Total:
                   </span>
 
-                  <span className="text-success">
+                  <span className="valor-total">
 
                     C$ {parseFloat(
                       monto || 0
@@ -367,13 +433,14 @@ const FormularioReserva = ({
 
       </Modal.Body>
 
-      <Modal.Footer>
+      <Modal.Footer className="footer-reserva">
 
         <Button
           variant="secondary"
           onClick={() => setMostrar(false)}
+          className="btn-cancelar"
         >
-
+          <i className="bi bi-x-circle me-2"></i>
           Cancelar
 
         </Button>
@@ -386,9 +453,10 @@ const FormularioReserva = ({
             !habitacionSeleccionada ||
             !recepcionistaSeleccionado
           }
+          className="btn-guardar"
         >
-
-          Registrar Reserva
+          <i className="bi bi-check-circle me-2"></i>
+          {reservaAEditar ? "Actualizar Reserva" : "Registrar Reserva"}
 
         </Button>
 
