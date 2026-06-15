@@ -113,32 +113,12 @@
 <a name='L48'></a><a href='#L48'>48</a>
 <a name='L49'></a><a href='#L49'>49</a>
 <a name='L50'></a><a href='#L50'>50</a>
-<a name='L51'></a><a href='#L51'>51</a>
-<a name='L52'></a><a href='#L52'>52</a>
-<a name='L53'></a><a href='#L53'>53</a>
-<a name='L54'></a><a href='#L54'>54</a>
-<a name='L55'></a><a href='#L55'>55</a>
-<a name='L56'></a><a href='#L56'>56</a>
-<a name='L57'></a><a href='#L57'>57</a>
-<a name='L58'></a><a href='#L58'>58</a>
-<a name='L59'></a><a href='#L59'>59</a>
-<a name='L60'></a><a href='#L60'>60</a>
-<a name='L61'></a><a href='#L61'>61</a>
-<a name='L62'></a><a href='#L62'>62</a>
-<a name='L63'></a><a href='#L63'>63</a>
-<a name='L64'></a><a href='#L64'>64</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L51'></a><a href='#L51'>51</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -149,8 +129,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -160,22 +138,18 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -190,19 +164,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">function registroHabitacion(habitacion) {
-    const {
-        numero_habitacion,
-        tipo_habitacion,
-        tipo_camas,
-        tipo_clima,
-        precio,
-        estado
-    } = habitacion;
+    const { numero_habitacion, tipo_habitacion, tipo_camas,
+        tipo_clima, precio, estado } = habitacion;
 &nbsp;
     const num = Number(numero_habitacion);
     const pre = Number(precio);
 &nbsp;
-    // Obligatorios
     if (
         numero_habitacion === "" || numero_habitacion == null ||
         tipo_habitacion === "" || tipo_habitacion == null ||
@@ -213,8 +180,6 @@
     ) {
         return { valido: false, mensaje: "Todos los campos son obligatorios" };
     }
-&nbsp;
-    // Número habitación
     if (isNaN(num)) {
         return { valido: false, mensaje: "El número de habitación debe ser numérico" };
     }
@@ -223,24 +188,20 @@
 <span class="cstat-no" title="statement not covered" >        return { valido: false, mensaje: "El número de habitación debe ser válido" };</span>
     }
 &nbsp;
-    // ⚠️ MÁS FLEXIBLE (ESTO ES CLAVE)
     <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof tipo_habitacion !== "string") {
 <span class="cstat-no" title="statement not covered" >        return { valido: false, mensaje: "El tipo de habitación solo puede contener letras" };</span>
     }
 &nbsp;
-    // Precio
     if (isNaN(pre) || pre &lt;= 0) {
         return { valido: false, mensaje: "El precio debe ser mayor que 0" };
     }
 &nbsp;
-    // Estado
     const estadosValidos = ["Disponible", "Ocupada", "Mantenimiento"];
 &nbsp;
     if (!estadosValidos.includes(estado)) {
         return { valido: false, mensaje: "El estado no es válido" };
     }
 &nbsp;
-    // ⚠️ ELIMINAMOS regex agresivo (causa del fallo)
     <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof tipo_camas !== "string") {
 <span class="cstat-no" title="statement not covered" >        return { valido: false, mensaje: "El tipo de camas solo puede contener letras" };</span>
     }
@@ -259,7 +220,7 @@ module.exports = registroHabitacion;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-11T16:09:06.054Z
+                at 2026-06-15T15:38:51.713Z
             </div>
         <script src="prettify.js"></script>
         <script>
