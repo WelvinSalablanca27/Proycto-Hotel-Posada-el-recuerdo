@@ -10,7 +10,7 @@ const Dashboard = () => {
           title="estadisticas"
           width="100%"
           height="100%"
-          src="https://app.powerbi.com/view?r=eyJrIjoiOGNiNmM5NGEtOTFiYS00NDBlLWJjNTItY2ZlNmM0OTk0MDVhIiwidCI6ImU0NzY0NmZlLWRhMjctNDUxOC04NDM2LTVmOGIxNThiYTEyNyIsImMiOjR9"
+          src="https://app.powerbi.com/view?r=eyJrIjoiODc0Y2UzNTItZDQ4Yi00N2FjLThhMzgtYWYyYmFmMzg0M2Q1IiwidCI6ImU0NzY0NmZlLWRhMjctNDUxOC04NDM2LTVmOGIxNThiYTEyNyIsImMiOjR9"
           allowFullScreen
           style={{ border: "none" }}
         />
