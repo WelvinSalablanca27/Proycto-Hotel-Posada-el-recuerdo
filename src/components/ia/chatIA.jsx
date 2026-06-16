@@ -7,9 +7,12 @@ const ChatIA = ({ mostrar, onCerrar }) => {
   const [mensajes, setMensajes] = useState([]);
   const [entrada, setEntrada] = useState('');
   const [cargando, setCargando] = useState(false);
+
   const finChatRef = useRef(null);
 
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const genAI = new GoogleGenerativeAI(
+    import.meta.env.VITE_GEMINI_API_KEY
+  );
 
   const contextoBaseDatos = `
 Sistema de Gestión Hotelera.
@@ -38,179 +41,368 @@ Relaciones:
 - Reserva.id_recepcionista → recepcion.id_recepcionista
 - Reserva.id_habitacion → Habitacion.id_habitacion
 `;
+
   const enviarConsulta = async () => {
     if (!entrada.trim()) return;
 
-    const mensajeUsuario = { tipo: 'usuario', contenido: entrada };
+    const mensajeUsuario = {
+      tipo: 'usuario',
+      contenido: entrada
+    };
+
     setMensajes(prev => [...prev, mensajeUsuario]);
+
     const consultaActual = entrada;
+
     setEntrada('');
     setCargando(true);
 
     try {
-      const modelo = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+      const modelo = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash"
+      });
 
       const prompt = `
-      Eres un experto en PostgreSQL. Genera una consulta SQL válida.
-      ${contextoBaseDatos}
+Eres un experto en PostgreSQL.
 
-      Reglas estrictas:
-      - Comprende el lenguaje natural del usuario y corrige errores de redacción o gramática.
-      - Solo devuelve consultas SELECT.
-      - NO uses punto y coma (;) al final.
-      - NO uses markdown, ni sql, ni explicaciones fuera del JSON.
-      - Usa alias claros cuando hagas JOIN.
-      - Devuelve SOLO el siguiente JSON, nada más:
+${contextoBaseDatos}
 
-      {
-        "explicacion": "Explicación breve y clara",
-        "consulta_sql": "SELECT ...",
-        "columnas": ["columna1", "columna2"]
-      }
+REGLAS IMPORTANTES:
 
-      Consulta del usuario: "${consultaActual}"
-      `;
+- Comprende errores ortográficos del usuario.
+- SOLO genera consultas SELECT.
+- NO uses DELETE, UPDATE, INSERT, DROP.
+- NO uses punto y coma al final.
+- Usa exactamente los nombres de tablas y columnas dados.
+- NO agregues markdown.
+- NO agregues explicación fuera del JSON.
+- Devuelve SOLO este JSON:
+
+{
+  "explicacion": "texto",
+  "consulta_sql": "SELECT ...",
+  "columnas": ["columna1", "columna2"]
+}
+
+Consulta del usuario:
+"${consultaActual}"
+`;
 
       const resultado = await modelo.generateContent(prompt);
+
       let texto = resultado.response.text().trim();
 
-      // Limpieza de respuesta generada en caso de que el modelo incluya formato no deseado
-      texto = texto.replace(/```[\s\S]*?```/g, '').trim();
+      // Limpiar markdown
+      texto = texto
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
 
+      // Extraer JSON
       const match = texto.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error("No se pudo extraer JSON de la IA");
+
+      if (!match || !match[0]) {
+        throw new Error("No se pudo extraer JSON");
+      }
 
       const respuestaIA = JSON.parse(match[0]);
 
       let sqlLimpio = respuestaIA.consulta_sql.trim();
 
-      // Limpieza caracteres que puedan causar errores comunes
+      // Limpiar SQL
       sqlLimpio = sqlLimpio.replace(/;\s*$/, '');
       sqlLimpio = sqlLimpio.replace(/\)\s*\)/g, ')');
       sqlLimpio = sqlLimpio.replace(/,\s*\)/g, ')');
 
-      const { data, error } = await supabase.rpc('ejecutar_consulta_segura', {
-        query_sql: sqlLimpio
-      });
+      console.log("SQL GENERADO:", sqlLimpio);
+
+      // Ejecutar RPC Supabase
+      const { data, error } = await supabase.rpc(
+        'ejecutar_consulta_segura',
+        {
+          query_sql: sqlLimpio
+        }
+      );
+
+      console.log("DATA SUPABASE:", data);
 
       if (error) {
-        console.error("Error Supabase:", error);
-        throw new Error(`Error en SQL: ${error.message}`);
+        console.error("ERROR SUPABASE:", error);
+
+        throw new Error(
+          `Error SQL: ${error.message}`
+        );
       }
 
-      const datosExtraidos = data ? data.map(item => item.datos) : [];
+      // Validar datos
+      const datosExtraidos = Array.isArray(data)
+        ? data
+        : [];
+
+      console.log("DATOS EXTRAIDOS:", datosExtraidos);
+
+      // Obtener columnas reales
+      const columnasReales =
+        datosExtraidos.length > 0
+          ? Object.keys(datosExtraidos[0])
+          : [];
+
+      console.log("COLUMNAS:", columnasReales);
 
       const mensajeRespuesta = {
         tipo: 'ia',
-        explicacion: respuestaIA.explicacion || "Consulta ejecutada correctamente",
-        columnas: respuestaIA.columnas || (datosExtraidos.length > 0 ? Object.keys(datosExtraidos[0]) : []),
+        explicacion:
+          respuestaIA.explicacion ||
+          "Consulta ejecutada correctamente",
+
+        columnas: columnasReales,
+
         datos: datosExtraidos
       };
 
-      setMensajes(prev => [...prev, mensajeRespuesta]);
+      setMensajes(prev => [
+        ...prev,
+        mensajeRespuesta
+      ]);
 
     } catch (error) {
-      console.error("Error completo:", error);
-      setMensajes(prev => [...prev, {
-        tipo: 'ia',
-        explicacion: "No entendí bien tu consulta. Por favor, reformúlala de forma clara.",
-        error: true
-      }]);
-    }
 
-    setCargando(false);
+      console.error("ERROR COMPLETO:", error);
+
+      setMensajes(prev => [
+        ...prev,
+        {
+          tipo: 'ia',
+          explicacion:
+            error.message ||
+            "No entendí tu consulta.",
+          error: true
+        }
+      ]);
+
+    } finally {
+
+      setCargando(false);
+
+    }
   };
 
   useEffect(() => {
-    finChatRef.current?.scrollIntoView({ behavior: 'smooth' });
+    finChatRef.current?.scrollIntoView({
+      behavior: 'smooth'
+    });
   }, [mensajes]);
 
   return (
-    <Modal show={mostrar} onHide={onCerrar} size="xl" centered backdrop="static">
+    <Modal
+      show={mostrar}
+      onHide={onCerrar}
+      size="xl"
+      centered
+      backdrop="static"
+    >
+
       <Modal.Header closeButton>
-        <Modal.Title>Consultas Inteligentes</Modal.Title>
+        <Modal.Title>
+          Consultas Inteligentes
+        </Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ height: "68vh", overflowY: "auto" }}>
+
+      <Modal.Body
+        style={{
+          height: "68vh",
+          overflowY: "auto"
+        }}
+      >
+
         <div className="d-flex flex-column h-100">
+
           <div className="flex-grow-1 overflow-auto mb-3 pe-2">
+
             {mensajes.length === 0 && (
               <div className="text-center text-muted mt-5">
-                <h5>¿Qué información necesitas?</h5>
-                <p className="mt-2">Ejemplos:</p>
+
+                <h5>
+                  ¿Qué información necesitas?
+                </h5>
+
+                <p className="mt-2">
+                  Ejemplos:
+                </p>
+
                 <ul className="text-start">
                   <li>Total de reservas del mes actual</li>
                   <li>Top 10 habitaciones más reservadas</li>
-                  <li>Huéspedes con mayor número de reservas</li>
-                  <li>Desempeño de reservas por recepcionista</li>
-                  <li>Ingresos totales generados</li>
-                  <li>Disponibilidad actual de habitaciones</li>
-                  <li>Distribución de huéspedes por lugar de origen</li>
-                  <li>Análisis de métodos de pago utilizados</li>
-                  <li>Ingresos por tipo de habitación</li>
-                  <li>Promedio de ocupación hotelera</li>
+                  <li>Huéspedes con más reservas</li>
+                  <li>Ingresos totales</li>
+                  <li>Habitaciones disponibles</li>
+                  <li>Métodos de pago más usados</li>
+                  <li>Ingresos por habitación</li>
                 </ul>
+
               </div>
             )}
 
             {mensajes.map((msg, index) => (
-              <div key={index} className={`mb-4 ${msg.tipo === 'usuario' ? 'text-end' : ''}`}>
-                <div className={`d-inline-block p-3 rounded-3 ${msg.tipo === 'usuario' ? 'bg-primary text-white' : 'bg-light border'}`}
-                  style={{ maxWidth: '90%' }}>
-                  <strong>{msg.tipo === 'usuario' ? 'Tú:' : 'Asistente IA:'}</strong><br />
+
+              <div
+                key={index}
+                className={`mb-4 ${
+                  msg.tipo === 'usuario'
+                    ? 'text-end'
+                    : ''
+                }`}
+              >
+
+                <div
+                  className={`
+                    d-inline-block
+                    p-3
+                    rounded-3
+                    ${
+                      msg.tipo === 'usuario'
+                        ? 'bg-primary text-white'
+                        : 'bg-light border'
+                    }
+                  `}
+                  style={{
+                    maxWidth: '90%'
+                  }}
+                >
+
+                  <strong>
+                    {msg.tipo === 'usuario'
+                      ? 'Tú:'
+                      : 'Asistente IA:'}
+                  </strong>
+
+                  <br />
 
                   {msg.tipo === 'usuario' ? (
-                    <p className="mb-0">{msg.contenido}</p>
+
+                    <p className="mb-0">
+                      {msg.contenido}
+                    </p>
+
                   ) : (
-                    msg.explicacion
+
+                    <>
+                      <p className="mb-2">
+                        {msg.explicacion}
+                      </p>
+
+                      {msg.datos &&
+                        msg.datos.length > 0 && (
+
+                        <Table
+                          striped
+                          bordered
+                          hover
+                          size="sm"
+                          responsive
+                          className="mt-3"
+                        >
+
+                          <thead>
+                            <tr>
+                              {msg.columnas.map((col, i) => (
+                                <th key={i}>
+                                  {col.replace(/_/g, ' ')}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+
+                          <tbody>
+
+                            {Array.isArray(msg.datos) &&
+                              msg.datos.map((fila, i) => (
+
+                              <tr key={i}>
+
+                                {msg.columnas.map((col, j) => (
+
+                                  <td key={j}>
+                                    {fila?.[col] ?? "N/A"}
+                                  </td>
+
+                                ))}
+
+                              </tr>
+
+                            ))}
+
+                          </tbody>
+
+                        </Table>
+
+                      )}
+
+                    </>
+
                   )}
 
-                  {msg.datos && msg.datos.length > 0 && (
-                    <Table striped bordered hover size="sm" responsive className="mt-3">
-                      <thead>
-                        <tr>
-                          {msg.columnas.map((col, i) => (
-                            <th key={i}>{col.replace(/_/g, ' ')}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {msg.datos.map((fila, i) => (
-                          <tr key={i}>
-                            {msg.columnas.map((col, j) => (
-                              <td key={j}>{fila[col]}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  )}
                 </div>
+
               </div>
+
             ))}
 
             {cargando && (
               <div className="text-center py-3">
-                <Spinner animation="border" size="sm" /> Procesando consulta...
+
+                <Spinner
+                  animation="border"
+                  size="sm"
+                />
+
+                {" "}Procesando consulta...
+
               </div>
             )}
+
             <div ref={finChatRef} />
+
           </div>
 
-          <Form onSubmit={(e) => { e.preventDefault(); enviarConsulta(); }}>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              enviarConsulta();
+            }}
+          >
+
             <div className="d-flex gap-2">
+
               <Form.Control
                 value={entrada}
-                onChange={(e) => setEntrada(e.target.value)}
-                placeholder="Escribe tu consulta en lenguaje natural..."
+                onChange={(e) =>
+                  setEntrada(e.target.value)
+                }
+                placeholder="Escribe tu consulta..."
                 disabled={cargando}
               />
-              <Button variant="primary" onClick={enviarConsulta} disabled={cargando || !entrada.trim()}>
+
+              <Button
+                variant="primary"
+                onClick={enviarConsulta}
+                disabled={
+                  cargando ||
+                  !entrada.trim()
+                }
+              >
                 Enviar
               </Button>
+
             </div>
+
           </Form>
+
         </div>
+
       </Modal.Body>
+
     </Modal>
   );
 };
