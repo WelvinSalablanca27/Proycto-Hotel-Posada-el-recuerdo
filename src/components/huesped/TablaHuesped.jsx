@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Spinner, Button, Form, Badge } from "react-bootstrap";
+import {
+    Table,
+    Spinner,
+    Button,
+    Form,
+    Badge
+} from "react-bootstrap";
+
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const TablaHuesped = ({
@@ -39,8 +46,7 @@ const TablaHuesped = ({
 
     };
 
-    // Detectar automáticamente si es cédula
-    // Cédula = tiene guiones
+    // Detectar cédula
     const esCedula = (documento) => {
 
         if (!documento) return false;
@@ -49,8 +55,7 @@ const TablaHuesped = ({
 
     };
 
-    // Detectar automáticamente si es pasaporte
-    // Pasaporte = NO tiene guiones
+    // Detectar pasaporte
     const esPasaporte = (documento) => {
 
         if (!documento) return false;
@@ -59,10 +64,11 @@ const TablaHuesped = ({
 
     };
 
-    // Filtrar documentos automáticamente
+    // Filtrar automáticamente
     const huespedesFiltrados = huespedes.filter((huesped) => {
 
-        const documento = huesped.cedula_pasaporte || "";
+        const documento =
+            huesped.cedula_pasaporte || "";
 
         if (tipoDocumento === "cedula") {
 
@@ -86,14 +92,20 @@ const TablaHuesped = ({
 
                 <div className="text-center py-5">
 
-                    <h5 className="mb-3 text-secondary">
+                    <h4 className="mb-4 text-primary fw-bold">
+
                         Cargando huéspedes...
-                    </h5>
+
+                    </h4>
 
                     <Spinner
                         animation="border"
                         variant="primary"
                         role="status"
+                        style={{
+                            width: "4rem",
+                            height: "4rem"
+                        }}
                     />
 
                 </div>
@@ -107,108 +119,144 @@ const TablaHuesped = ({
                         borderless
                         hover
                         responsive
-                        size="sm"
-                        className="tabla-huesped"
+                        size="lg"
+                        className="tabla-huesped align-middle"
+                        style={{
+                            fontSize: "16px",
+                            borderRadius: "18px",
+                            overflow: "hidden",
+                            boxShadow:
+                                "0 8px 25px rgba(0,0,0,0.12)",
+                            backgroundColor: "#fff"
+                        }}
                     >
+
+                        {/* HEADER */}
                         <thead
                             style={{
-                                backgroundColor: "#0019d4",
-                                color: "#fff"
+                                background:
+                                    "linear-gradient(135deg, #0019d4, #0048ff)",
+                                color: "#fff",
+                                fontSize: "16px",
+                                height: "75px",
+                                verticalAlign: "middle"
                             }}
                         >
 
                             <tr>
 
-                                <th style={{ minWidth: "70px" }}>
+                                <th
+                                    style={{
+                                        minWidth: "80px",
+                                        padding: "20px"
+                                    }}
+                                >
                                     ID
                                 </th>
 
-                                <th>
+                                <th
+                                    style={{
+                                        padding: "20px"
+                                    }}
+                                >
                                     Nombre Completo
                                 </th>
 
-                                <th style={{ minWidth: "260px" }}>
+                                <th
+                                    style={{
+                                        minWidth: "300px",
+                                        padding: "20px"
+                                    }}
+                                >
 
-    <div
-        className="d-flex align-items-center gap-2"
-        style={{
-            background: "#ffffff",
-            padding: "6px 10px",
-            borderRadius: "12px",
-            border: "2px solid rgba(255,255,255,0.25)",
-            width: "fit-content",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
-        }}
-    >
+                                    <div
+                                        className="d-flex align-items-center gap-3"
+                                        style={{
+                                            background: "#ffffff",
+                                            padding: "8px 14px",
+                                            borderRadius: "14px",
+                                            width: "fit-content",
+                                            boxShadow:
+                                                "0 3px 10px rgba(0,0,0,0.15)"
+                                        }}
+                                    >
 
-        {/* TEXTO */}
-        <div
-            className="d-flex align-items-center gap-2"
-            style={{
-                color: "#0019d4",
-                fontWeight: "700",
-                fontSize: "14px",
-                whiteSpace: "nowrap"
-            }}
-        >
+                                        {/* TEXTO */}
+                                        <div
+                                            className="d-flex align-items-center gap-2"
+                                            style={{
+                                                color: "#0019d4",
+                                                fontWeight: "700",
+                                                fontSize: "15px"
+                                            }}
+                                        >
 
-            <i className="bi bi-credit-card-2-front-fill"></i>
+                                            <i className="bi bi-credit-card-2-front-fill"></i>
 
-            Documento
+                                            Documento
 
-        </div>
+                                        </div>
 
-        {/* SELECTOR */}
-        <Form.Select
-            size="sm"
-            value={tipoDocumento}
-            onChange={(e) =>
-                setTipoDocumento(
-                    e.target.value
-                )
-            }
-            style={{
-                width: "135px",
-                borderRadius: "10px",
-                border:
-                    tipoDocumento === "cedula"
-                        ? "2px solid #0d6efd"
-                        : "2px solid #198754",
-                backgroundColor:
-                    tipoDocumento === "cedula"
-                        ? "#eef4ff"
-                        : "#eefcf3",
-                color:
-                    tipoDocumento === "cedula"
-                        ? "#0d6efd"
-                        : "#198754",
-                fontWeight: "700",
-                cursor: "pointer",
-                transition: "0.3s ease"
-            }}
-        >
+                                        {/* SELECT */}
+                                        <Form.Select
+                                            size="sm"
+                                            value={tipoDocumento}
+                                            onChange={(e) =>
+                                                setTipoDocumento(
+                                                    e.target.value
+                                                )
+                                            }
+                                            style={{
+                                                width: "145px",
+                                                borderRadius: "12px",
+                                                border:
+                                                    tipoDocumento === "cedula"
+                                                        ? "2px solid #0d6efd"
+                                                        : "2px solid #198754",
+                                                backgroundColor:
+                                                    tipoDocumento === "cedula"
+                                                        ? "#eef4ff"
+                                                        : "#eefcf3",
+                                                color:
+                                                    tipoDocumento === "cedula"
+                                                        ? "#0d6efd"
+                                                        : "#198754",
+                                                fontWeight: "700",
+                                                cursor: "pointer",
+                                                transition:
+                                                    "0.3s ease"
+                                            }}
+                                        >
 
-            <option value="cedula">
-                Cédula
-            </option>
+                                            <option value="cedula">
+                                                Cédula
+                                            </option>
 
-            <option value="pasaporte">
-                Pasaporte
-            </option>
+                                            <option value="pasaporte">
+                                                Pasaporte
+                                            </option>
 
-        </Form.Select>
+                                        </Form.Select>
 
-    </div>
+                                    </div>
 
-</th>
+                                </th>
 
-                                <th className="d-none d-md-table-cell">
+                                <th
+                                    className="d-none d-md-table-cell"
+                                    style={{
+                                        padding: "20px"
+                                    }}
+                                >
                                     Lugar Origen
                                 </th>
 
                                 <th
                                     className="text-center"
-                                    style={{ minWidth: "130px" }}
+                                    style={{
+                                        minWidth: "150px",
+                                        padding: "20px"
+                                    }}
                                 >
                                     Acciones
                                 </th>
@@ -217,6 +265,7 @@ const TablaHuesped = ({
 
                         </thead>
 
+                        {/* BODY */}
                         <tbody>
 
                             {huespedesFiltrados.length > 0 ? (
@@ -228,23 +277,49 @@ const TablaHuesped = ({
 
                                     return (
 
-                                        <tr key={huesped.id_huesped}>
+                                        <tr
+                                            key={huesped.id_huesped}
+                                            style={{
+                                                transition:
+                                                    "0.2s ease"
+                                            }}
+                                        >
 
-                                            <td className="fw-semibold">
+                                            {/* ID */}
+                                            <td
+                                                className="fw-bold text-primary"
+                                                style={{
+                                                    padding: "18px",
+                                                    verticalAlign: "middle"
+                                                }}
+                                            >
 
                                                 {huesped.id_huesped}
 
                                             </td>
 
-                                            <td className="fw-semibold">
+                                            {/* NOMBRE */}
+                                            <td
+                                                className="fw-semibold"
+                                                style={{
+                                                    padding: "18px",
+                                                    verticalAlign: "middle"
+                                                }}
+                                            >
 
                                                 {nombreCompleto(huesped)}
 
                                             </td>
 
-                                            <td>
+                                            {/* DOCUMENTO */}
+                                            <td
+                                                style={{
+                                                    padding: "18px",
+                                                    verticalAlign: "middle"
+                                                }}
+                                            >
 
-                                                <div className="d-flex align-items-center gap-2">
+                                                <div className="d-flex align-items-center gap-3">
 
                                                     <Badge
                                                         bg={
@@ -252,6 +327,13 @@ const TablaHuesped = ({
                                                                 ? "primary"
                                                                 : "success"
                                                         }
+                                                        style={{
+                                                            fontSize: "13px",
+                                                            padding:
+                                                                "10px 14px",
+                                                            borderRadius:
+                                                                "12px"
+                                                        }}
                                                     >
 
                                                         {esCedula(documento)
@@ -260,7 +342,12 @@ const TablaHuesped = ({
 
                                                     </Badge>
 
-                                                    <span className="fw-medium">
+                                                    <span
+                                                        className="fw-bold"
+                                                        style={{
+                                                            fontSize: "15px"
+                                                        }}
+                                                    >
 
                                                         {documento || "—"}
 
@@ -270,18 +357,38 @@ const TablaHuesped = ({
 
                                             </td>
 
-                                            <td className="d-none d-md-table-cell">
+                                            {/* LUGAR */}
+                                            <td
+                                                className="d-none d-md-table-cell"
+                                                style={{
+                                                    padding: "18px",
+                                                    verticalAlign: "middle"
+                                                }}
+                                            >
 
                                                 {huesped.lugar_origen || "—"}
 
                                             </td>
 
-                                            <td className="text-center">
+                                            {/* BOTONES */}
+                                            <td
+                                                className="text-center"
+                                                style={{
+                                                    padding: "18px",
+                                                    verticalAlign: "middle"
+                                                }}
+                                            >
 
                                                 <Button
                                                     variant="outline-warning"
-                                                    size="sm"
+                                                    size="md"
                                                     className="me-2"
+                                                    style={{
+                                                        padding:
+                                                            "8px 14px",
+                                                        borderRadius:
+                                                            "10px"
+                                                    }}
                                                     onClick={() =>
                                                         abrirModalEdicion(
                                                             huesped
@@ -289,13 +396,19 @@ const TablaHuesped = ({
                                                     }
                                                 >
 
-                                                    <i className="bi bi-pencil"></i>
+                                                    <i className="bi bi-pencil-fill"></i>
 
                                                 </Button>
 
                                                 <Button
                                                     variant="outline-danger"
-                                                    size="sm"
+                                                    size="md"
+                                                    style={{
+                                                        padding:
+                                                            "8px 14px",
+                                                        borderRadius:
+                                                            "10px"
+                                                    }}
                                                     onClick={() =>
                                                         abrirModalEliminacion(
                                                             huesped
@@ -303,7 +416,7 @@ const TablaHuesped = ({
                                                     }
                                                 >
 
-                                                    <i className="bi bi-trash"></i>
+                                                    <i className="bi bi-trash-fill"></i>
 
                                                 </Button>
 
@@ -321,8 +434,13 @@ const TablaHuesped = ({
 
                                     <td
                                         colSpan="5"
-                                        className="text-center py-4 text-muted fw-semibold"
+                                        className="text-center py-5 text-muted fw-bold"
+                                        style={{
+                                            fontSize: "18px"
+                                        }}
                                     >
+
+                                        <i className="bi bi-folder-x me-2"></i>
 
                                         No hay registros de{" "}
                                         {tipoDocumento === "cedula"
