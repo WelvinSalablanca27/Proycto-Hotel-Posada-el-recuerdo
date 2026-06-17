@@ -103,13 +103,13 @@ const TablaHuesped = ({
                 <div className="table-responsive">
 
                     <Table
-                                                     striped
-                                                     borderless
-                                                     hover
-                                                     responsive
-                                                     size="sm"
-                                                     className="tabla-huesped"
-                                                 >
+                        striped
+                        borderless
+                        hover
+                        responsive
+                        size="sm"
+                        className="tabla-huesped"
+                    >
                         <thead
                             style={{
                                 backgroundColor: "#0019d4",
@@ -129,40 +129,78 @@ const TablaHuesped = ({
 
                                 <th style={{ minWidth: "260px" }}>
 
-                                    <div className="d-flex align-items-center justify-content-between gap-2">
+    <div
+        className="d-flex align-items-center gap-2"
+        style={{
+            background: "#ffffff",
+            padding: "6px 10px",
+            borderRadius: "12px",
+            border: "2px solid rgba(255,255,255,0.25)",
+            width: "fit-content",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+        }}
+    >
 
-                                        <span>
-                                            Documento
-                                        </span>
+        {/* TEXTO */}
+        <div
+            className="d-flex align-items-center gap-2"
+            style={{
+                color: "#0019d4",
+                fontWeight: "700",
+                fontSize: "14px",
+                whiteSpace: "nowrap"
+            }}
+        >
 
-                                        <Form.Select
-                                            size="sm"
-                                            value={tipoDocumento}
-                                            onChange={(e) =>
-                                                setTipoDocumento(
-                                                    e.target.value
-                                                )
-                                            }
-                                            style={{
-                                                width: "140px",
-                                                fontSize: "13px",
-                                                fontWeight: "500"
-                                            }}
-                                        >
+            <i className="bi bi-credit-card-2-front-fill"></i>
 
-                                            <option value="cedula">
-                                                Cédula
-                                            </option>
+            Documento
 
-                                            <option value="pasaporte">
-                                                Pasaporte
-                                            </option>
+        </div>
 
-                                        </Form.Select>
+        {/* SELECTOR */}
+        <Form.Select
+            size="sm"
+            value={tipoDocumento}
+            onChange={(e) =>
+                setTipoDocumento(
+                    e.target.value
+                )
+            }
+            style={{
+                width: "135px",
+                borderRadius: "10px",
+                border:
+                    tipoDocumento === "cedula"
+                        ? "2px solid #0d6efd"
+                        : "2px solid #198754",
+                backgroundColor:
+                    tipoDocumento === "cedula"
+                        ? "#eef4ff"
+                        : "#eefcf3",
+                color:
+                    tipoDocumento === "cedula"
+                        ? "#0d6efd"
+                        : "#198754",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "0.3s ease"
+            }}
+        >
 
-                                    </div>
+            <option value="cedula">
+                Cédula
+            </option>
 
-                                </th>
+            <option value="pasaporte">
+                Pasaporte
+            </option>
+
+        </Form.Select>
+
+    </div>
+
+</th>
 
                                 <th className="d-none d-md-table-cell">
                                     Lugar Origen
