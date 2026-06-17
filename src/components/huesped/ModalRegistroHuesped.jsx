@@ -185,7 +185,7 @@ const ModalRegistroHuesped = ({
                                     onChange={handleDocumentoChange}
                                     placeholder={
                                         tipoDocumento === "cedula"
-                                            ? "0000-000000-0000"
+                                            ? "0000-000000-0000H"
                                             : "Pasaporte"
                                     }
                                     maxLength={

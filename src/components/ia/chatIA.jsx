@@ -1,9 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Button, Form, Spinner, Table } from 'react-bootstrap';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { supabase } from '../../database/supabaseconfig';
+import {
+  Modal,
+  Button,
+  Form,
+  Spinner,
+  Table,
+  Badge,
+  Card
+} from 'react-bootstrap';
+
+import {
+  GoogleGenerativeAI
+} from "@google/generative-ai";
+
+import {
+  supabase
+} from '../../database/supabaseconfig';
+
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 const ChatIA = ({ mostrar, onCerrar }) => {
+
   const [mensajes, setMensajes] = useState([]);
   const [entrada, setEntrada] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -20,20 +37,24 @@ Sistema de Gestión Hotelera.
 Tablas disponibles:
 
 - Huesped
-  (id_huesped, primer_nombre, segundo_nombre, primer_apellido,
-   segundo_apellido, cedula_pasaporte, lugar_origen)
+  (id_huesped, primer_nombre, segundo_nombre,
+   primer_apellido, segundo_apellido,
+   cedula_pasaporte, lugar_origen)
 
 - Habitacion
-  (id_habitacion, numero_habitacion, tipo_habitacion,
-   tipo_camas, tipo_clima, precio, estado)
+  (id_habitacion, numero_habitacion,
+   tipo_habitacion, tipo_camas,
+   tipo_clima, precio, estado)
 
 - recepcion
-  (id_recepcionista, fecha, nombre, apellido,
-   hora_entrada, hora_salida, turno)
+  (id_recepcionista, fecha, nombre,
+   apellido, hora_entrada,
+   hora_salida, turno)
 
 - Reserva
-  (id_reserva, id_huesped, id_recepcionista,
-   id_habitacion, hora_entrada, hora_salida,
+  (id_reserva, id_huesped,
+   id_recepcionista, id_habitacion,
+   hora_entrada, hora_salida,
    monto, forma_pago, fecha_pago)
 
 Relaciones:
@@ -43,6 +64,7 @@ Relaciones:
 `;
 
   const enviarConsulta = async () => {
+
     if (!entrada.trim()) return;
 
     const mensajeUsuario = {
@@ -50,7 +72,10 @@ Relaciones:
       contenido: entrada
     };
 
-    setMensajes(prev => [...prev, mensajeUsuario]);
+    setMensajes(prev => [
+      ...prev,
+      mensajeUsuario
+    ]);
 
     const consultaActual = entrada;
 
@@ -59,9 +84,10 @@ Relaciones:
 
     try {
 
-      const modelo = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash"
-      });
+      const modelo =
+        genAI.getGenerativeModel({
+          model: "gemini-2.5-flash"
+        });
 
       const prompt = `
 Eres un experto en PostgreSQL.
@@ -70,85 +96,77 @@ ${contextoBaseDatos}
 
 REGLAS IMPORTANTES:
 
-- Comprende errores ortográficos del usuario.
-- SOLO genera consultas SELECT.
-- NO uses DELETE, UPDATE, INSERT, DROP.
-- NO uses punto y coma al final.
-- Usa exactamente los nombres de tablas y columnas dados.
-- NO agregues markdown.
-- NO agregues explicación fuera del JSON.
-- Devuelve SOLO este JSON:
+- Comprende errores ortográficos.
+- SOLO genera SELECT.
+- NO uses DELETE, UPDATE, INSERT.
+- NO uses markdown.
+- Devuelve SOLO JSON.
 
 {
   "explicacion": "texto",
-  "consulta_sql": "SELECT ...",
-  "columnas": ["columna1", "columna2"]
+  "consulta_sql": "SELECT ..."
 }
 
-Consulta del usuario:
+Consulta:
 "${consultaActual}"
 `;
 
-      const resultado = await modelo.generateContent(prompt);
+      const resultado =
+        await modelo.generateContent(prompt);
 
-      let texto = resultado.response.text().trim();
+      let texto =
+        resultado.response.text().trim();
 
-      // Limpiar markdown
       texto = texto
         .replace(/```json/g, '')
         .replace(/```/g, '')
         .trim();
 
-      // Extraer JSON
-      const match = texto.match(/\{[\s\S]*\}/);
+      const match =
+        texto.match(/\{[\s\S]*\}/);
 
       if (!match || !match[0]) {
-        throw new Error("No se pudo extraer JSON");
+
+        throw new Error(
+          "No se pudo procesar la consulta"
+        );
+
       }
 
-      const respuestaIA = JSON.parse(match[0]);
+      const respuestaIA =
+        JSON.parse(match[0]);
 
-      let sqlLimpio = respuestaIA.consulta_sql.trim();
+      let sqlLimpio =
+        respuestaIA.consulta_sql.trim();
 
-      // Limpiar SQL
-      sqlLimpio = sqlLimpio.replace(/;\s*$/, '');
-      sqlLimpio = sqlLimpio.replace(/\)\s*\)/g, ')');
-      sqlLimpio = sqlLimpio.replace(/,\s*\)/g, ')');
+      sqlLimpio = sqlLimpio
+        .replace(/;\s*$/, '');
 
-      console.log("SQL GENERADO:", sqlLimpio);
-
-      // Ejecutar RPC Supabase
-      const { data, error } = await supabase.rpc(
+      const {
+        data,
+        error
+      } = await supabase.rpc(
         'ejecutar_consulta_segura',
         {
           query_sql: sqlLimpio
         }
       );
 
-      console.log("DATA SUPABASE:", data);
-
       if (error) {
-        console.error("ERROR SUPABASE:", error);
 
-        throw new Error(
-          `Error SQL: ${error.message}`
-        );
+        throw new Error(error.message);
+
       }
 
-      // Validar datos
-      const datosExtraidos = Array.isArray(data)
-        ? data
-        : [];
+      const datosExtraidos =
+        Array.isArray(data)
+          ? data
+          : [];
 
-      console.log("DATOS EXTRAIDOS:", datosExtraidos);
-
-      // Obtener columnas reales
       const columnasReales =
         datosExtraidos.length > 0
           ? Object.keys(datosExtraidos[0])
           : [];
-
-      console.log("COLUMNAS:", columnasReales);
 
       const mensajeRespuesta = {
         tipo: 'ia',
@@ -168,17 +186,18 @@ Consulta del usuario:
 
     } catch (error) {
 
-      console.error("ERROR COMPLETO:", error);
-
       setMensajes(prev => [
+
         ...prev,
+
         {
           tipo: 'ia',
           explicacion:
             error.message ||
-            "No entendí tu consulta.",
+            "Error en la consulta",
           error: true
         }
+
       ]);
 
     } finally {
@@ -186,15 +205,19 @@ Consulta del usuario:
       setCargando(false);
 
     }
+
   };
 
   useEffect(() => {
+
     finChatRef.current?.scrollIntoView({
       behavior: 'smooth'
     });
+
   }, [mensajes]);
 
   return (
+
     <Modal
       show={mostrar}
       onHide={onCerrar}
@@ -203,143 +226,305 @@ Consulta del usuario:
       backdrop="static"
     >
 
-      <Modal.Header closeButton>
-        <Modal.Title>
-          Consultas Inteligentes
+      {/* HEADER */}
+      <Modal.Header
+        closeButton
+        style={{
+          background:
+            "linear-gradient(135deg,#0019d4,#0048ff)",
+          color: "#fff",
+          borderBottom: "none"
+        }}
+      >
+
+        <Modal.Title
+          className="fw-bold d-flex align-items-center gap-2"
+        >
+
+          <i className="bi bi-robot"></i>
+
+          Asistente Inteligente IA
+
         </Modal.Title>
+
       </Modal.Header>
 
+      {/* BODY */}
       <Modal.Body
         style={{
-          height: "68vh",
-          overflowY: "auto"
+          backgroundColor: "#f4f7ff",
+          height: "72vh",
+          overflow: "hidden",
+          padding: "20px"
         }}
       >
 
         <div className="d-flex flex-column h-100">
 
-          <div className="flex-grow-1 overflow-auto mb-3 pe-2">
+          {/* CHAT */}
+          <div
+            className="flex-grow-1 overflow-auto pe-2"
+            style={{
+              paddingRight: "8px"
+            }}
+          >
 
+            {/* BIENVENIDA */}
             {mensajes.length === 0 && (
-              <div className="text-center text-muted mt-5">
 
-                <h5>
-                  ¿Qué información necesitas?
-                </h5>
+              <Card
+                className="border-0 shadow-sm"
+                style={{
+                  borderRadius: "20px",
+                  background:
+                    "linear-gradient(135deg,#ffffff,#eef4ff)"
+                }}
+              >
 
-                <p className="mt-2">
-                  Ejemplos:
-                </p>
+                <Card.Body className="text-center p-5">
 
-                <ul className="text-start">
-                  <li>Total de reservas del mes actual</li>
-                  <li>Top 10 habitaciones más reservadas</li>
-                  <li>Huéspedes con más reservas</li>
-                  <li>Ingresos totales</li>
-                  <li>Habitaciones disponibles</li>
-                  <li>Métodos de pago más usados</li>
-                  <li>Ingresos por habitación</li>
-                </ul>
+                  <div
+                    style={{
+                      fontSize: "70px",
+                      color: "#0d6efd"
+                    }}
+                  >
 
-              </div>
+                    <i className="bi bi-stars"></i>
+
+                  </div>
+
+                  <h3
+                    className="fw-bold mt-3"
+                    style={{
+                      color: "#0019d4"
+                    }}
+                  >
+
+                    Consultas Inteligentes
+
+                  </h3>
+
+                  <p
+                    className="text-muted mt-3"
+                    style={{
+                      fontSize: "16px"
+                    }}
+                  >
+
+                    Consulta información del hotel
+                    usando lenguaje natural.
+
+                  </p>
+
+                  {/* EJEMPLOS */}
+                  <div className="mt-4">
+
+                    <Badge
+                      bg="primary"
+                      className="m-2 p-3"
+                    >
+                      Total de reservas
+                    </Badge>
+
+                    <Badge
+                      bg="success"
+                      className="m-2 p-3"
+                    >
+                      Habitaciones disponibles
+                    </Badge>
+
+                    <Badge
+                      bg="warning"
+                      text="dark"
+                      className="m-2 p-3"
+                    >
+                      Ingresos del mes
+                    </Badge>
+
+                    <Badge
+                      bg="danger"
+                      className="m-2 p-3"
+                    >
+                      Top huéspedes
+                    </Badge>
+
+                  </div>
+
+                </Card.Body>
+
+              </Card>
+
             )}
 
+            {/* MENSAJES */}
             {mensajes.map((msg, index) => (
 
               <div
                 key={index}
-                className={`mb-4 ${
+                className={`mb-4 d-flex ${
                   msg.tipo === 'usuario'
-                    ? 'text-end'
-                    : ''
+                    ? 'justify-content-end'
+                    : 'justify-content-start'
                 }`}
               >
 
                 <div
-                  className={`
-                    d-inline-block
-                    p-3
-                    rounded-3
-                    ${
-                      msg.tipo === 'usuario'
-                        ? 'bg-primary text-white'
-                        : 'bg-light border'
-                    }
-                  `}
                   style={{
-                    maxWidth: '90%'
+                    maxWidth: "90%"
                   }}
                 >
 
-                  <strong>
-                    {msg.tipo === 'usuario'
-                      ? 'Tú:'
-                      : 'Asistente IA:'}
-                  </strong>
-
-                  <br />
-
+                  {/* USUARIO */}
                   {msg.tipo === 'usuario' ? (
 
-                    <p className="mb-0">
+                    <div
+                      style={{
+                        background:
+                          "linear-gradient(135deg,#0d6efd,#0048ff)",
+                        color: "#fff",
+                        padding: "15px 18px",
+                        borderRadius: "18px 18px 5px 18px",
+                        boxShadow:
+                          "0 4px 12px rgba(0,0,0,0.15)"
+                      }}
+                    >
+
+                      <div className="fw-bold mb-1">
+
+                        <i className="bi bi-person-circle me-2"></i>
+
+                        Tú
+
+                      </div>
+
                       {msg.contenido}
-                    </p>
+
+                    </div>
 
                   ) : (
 
-                    <>
-                      <p className="mb-2">
+                    <div
+                      style={{
+                        background: "#fff",
+                        borderRadius:
+                          "18px 18px 18px 5px",
+                        padding: "18px",
+                        border:
+                          msg.error
+                            ? "2px solid #dc3545"
+                            : "1px solid #dee2e6",
+                        boxShadow:
+                          "0 4px 12px rgba(0,0,0,0.08)"
+                      }}
+                    >
+
+                      <div
+                        className="fw-bold mb-2"
+                        style={{
+                          color:
+                            msg.error
+                              ? "#dc3545"
+                              : "#0019d4"
+                        }}
+                      >
+
+                        <i className="bi bi-robot me-2"></i>
+
+                        Asistente IA
+
+                      </div>
+
+                      <p
+                        className="mb-3"
+                        style={{
+                          fontSize: "15px"
+                        }}
+                      >
+
                         {msg.explicacion}
+
                       </p>
 
+                      {/* TABLA */}
                       {msg.datos &&
                         msg.datos.length > 0 && (
 
-                        <Table
-                          striped
-                          bordered
-                          hover
-                          size="sm"
-                          responsive
-                          className="mt-3"
+                        <div
+                          className="table-responsive"
+                          style={{
+                            borderRadius: "14px",
+                            overflow: "hidden"
+                          }}
                         >
 
-                          <thead>
-                            <tr>
-                              {msg.columnas.map((col, i) => (
-                                <th key={i}>
-                                  {col.replace(/_/g, ' ')}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
+                          <Table
+                            striped
+                            hover
+                            bordered
+                            responsive
+                            className="mb-0"
+                          >
 
-                          <tbody>
+                            <thead
+                              style={{
+                                background:
+                                  "linear-gradient(135deg,#0019d4,#0048ff)",
+                                color: "#fff"
+                              }}
+                            >
 
-                            {Array.isArray(msg.datos) &&
-                              msg.datos.map((fila, i) => (
+                              <tr>
 
-                              <tr key={i}>
+                                {msg.columnas.map(
+                                  (col, i) => (
 
-                                {msg.columnas.map((col, j) => (
+                                    <th key={i}>
 
-                                  <td key={j}>
-                                    {fila?.[col] ?? "N/A"}
-                                  </td>
+                                      {col.replace(/_/g, ' ')}
 
-                                ))}
+                                    </th>
+
+                                  )
+                                )}
 
                               </tr>
 
-                            ))}
+                            </thead>
 
-                          </tbody>
+                            <tbody>
 
-                        </Table>
+                              {msg.datos.map(
+                                (fila, i) => (
+
+                                  <tr key={i}>
+
+                                    {msg.columnas.map(
+                                      (col, j) => (
+
+                                        <td key={j}>
+
+                                          {fila?.[col] ?? "N/A"}
+
+                                        </td>
+
+                                      )
+                                    )}
+
+                                  </tr>
+
+                                )
+                              )}
+
+                            </tbody>
+
+                          </Table>
+
+                        </div>
 
                       )}
 
-                    </>
+                    </div>
 
                   )}
 
@@ -349,39 +534,61 @@ Consulta del usuario:
 
             ))}
 
+            {/* LOADING */}
             {cargando && (
-              <div className="text-center py-3">
+
+              <div className="text-center py-4">
 
                 <Spinner
                   animation="border"
-                  size="sm"
+                  variant="primary"
                 />
 
-                {" "}Procesando consulta...
+                <div className="mt-2 text-primary fw-semibold">
+
+                  Procesando consulta...
+
+                </div>
 
               </div>
+
             )}
 
             <div ref={finChatRef} />
 
           </div>
 
+          {/* INPUT */}
           <Form
+            className="mt-3"
             onSubmit={(e) => {
+
               e.preventDefault();
+
               enviarConsulta();
+
             }}
           >
 
-            <div className="d-flex gap-2">
+            <div
+              className="d-flex gap-2"
+            >
 
               <Form.Control
                 value={entrada}
                 onChange={(e) =>
                   setEntrada(e.target.value)
                 }
-                placeholder="Escribe tu consulta..."
+                placeholder="Escribe tu consulta inteligente..."
                 disabled={cargando}
+                style={{
+                  borderRadius: "14px",
+                  padding: "14px",
+                  border:
+                    "2px solid #dbe4ff",
+                  boxShadow:
+                    "0 2px 8px rgba(0,0,0,0.05)"
+                }}
               />
 
               <Button
@@ -391,8 +598,29 @@ Consulta del usuario:
                   cargando ||
                   !entrada.trim()
                 }
+                style={{
+                  borderRadius: "14px",
+                  padding:
+                    "0 22px",
+                  fontWeight: "700",
+                  boxShadow:
+                    "0 4px 12px rgba(0,0,0,0.15)"
+                }}
               >
-                Enviar
+
+                {cargando ? (
+
+                  <Spinner
+                    animation="border"
+                    size="sm"
+                  />
+
+                ) : (
+
+                  <i className="bi bi-send-fill"></i>
+
+                )}
+
               </Button>
 
             </div>
@@ -404,7 +632,9 @@ Consulta del usuario:
       </Modal.Body>
 
     </Modal>
+
   );
+
 };
 
 export default ChatIA;
